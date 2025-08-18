@@ -5,6 +5,11 @@ const routes = [
         path: '/',
         name: 'Dashboard',
         component: () => import('@/views/Dashboard/Index.vue')
+    },
+    {
+        path: '/orglist',
+        name: 'MyOrganizations',
+        component: () => import('@/views/MyOrganizations.vue')
     }
 ];
 
