@@ -1,0 +1,82 @@
+# ---- General ----
+.DS_Store
+*.log
+!.keep
+.env
+.env.*
+.env.local
+.env.backup
+.envrc
+.phpunit.result.cache
+.idea/
+.vscode/
+node_modules/
+coverage/
+# Turbo / Nx / Yarn
+.yarn/*
+!.yarn/patches
+!.yarn/releases
+!.yarn/plugins
+!.yarn/sdks
+!.yarn/versions
+.pnp.*
+# lockfiles to keep (uncomment if you want to ignore)
+# yarn.lock
+# pnpm-lock.yaml
+# package-lock.json
+
+# ---- Backend (Laravel) ----
+Backend/vendor/
+Backend/node_modules/
+Backend/public/storage
+Backend/storage/*.key
+Backend/storage/app/public
+Backend/storage/framework/cache/*.php
+Backend/storage/framework/cache/data
+Backend/storage/framework/sessions/*
+Backend/storage/framework/testing/*
+Backend/storage/framework/views/*.php
+Backend/storage/logs/*.log
+Backend/bootstrap/cache/*.php
+Backend/storage/debugbar/
+Backend/public/hot
+Backend/public/build
+Backend/public/mix-manifest.json
+Backend/.phpunit.result.cache
+Backend/.artisan.tinker.log
+Backend/database/database.sqlite
+# If you intentionally want sqlite committed, remove the line above.
+
+# Composer PHAR / misc
+composer.phar
+
+# ---- Frontend (Vite / Tailwind) ----
+Frontend/node_modules/
+Frontend/dist/
+Frontend/.vite/
+Frontend/.eslintcache
+
+# ---- Build artifacts ----
+*.cache
+*.temp
+*.tmp
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ---- OS / Editor ----
+Thumbs.db
+*.swp
+*.swo
+*.orig
+
+# ---- Coverage / Reports ----
+coverage/
+clover.xml
+.junit.xml
+
+# ---- Additional optional ignores (uncomment if needed) ----
+# docs/.vitepress/cache
+# *.iml
+
