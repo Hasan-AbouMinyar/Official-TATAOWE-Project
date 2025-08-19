@@ -9,7 +9,17 @@ const routes = [
     {
         path: '/orglist',
         name: 'MyOrganizations',
-        component: () => import('@/views/MyOrganizations.vue')
+        component: () => import('@/views/Organization/MyOrganizations.vue')
+    },
+    {
+        path: '/orglist/create',
+        name: 'OrganizationCreate',
+        component: () => import('@/views/Organization/Create.vue')
+    },
+    {
+        path: '/profile',
+        name: 'Profile',
+        component: () => import('@/views/Profile.vue')
     }
 ];
 
