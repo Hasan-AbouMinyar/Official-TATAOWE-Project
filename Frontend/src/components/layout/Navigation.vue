@@ -22,9 +22,9 @@
         </button>
         <transition enter-active-class="transition duration-200 ease-out" enter-from-class="transform scale-95 opacity-0" enter-to-class="transform scale-100 opacity-100" leave-active-class="transition duration-75 ease-in" leave-from-class="transform scale-100 opacity-100" leave-to-class="transform scale-95 opacity-0">
           <div class="absolute right-0 z-50 w-56 p-2 bg-white border rounded-lg top-16 lg:top-20" v-show="dropdownOpen" role="menu">
-            <div class="px-4 py-2 text-gray-800 transition-colors duration-300 rounded-lg cursor-pointer hover:bg-gray-100">Profile</div>
-            <div class="px-4 py-2 text-gray-800 transition-colors duration-300 rounded-lg cursor-pointer hover:bg-gray-100">Messages</div>
-            <div class="px-4 py-2 text-gray-800 transition-colors duration-300 rounded-lg cursor-pointer hover:bg-gray-100">To-Do's</div>
+            <RouterLink :to="{ name: 'Profile' }" class="block px-4 py-2 text-gray-800 transition-colors duration-300 rounded-lg hover:bg-gray-100" role="menuitem">Profile</RouterLink>
+            <RouterLink to="/messages" class="block px-4 py-2 text-gray-800 transition-colors duration-300 rounded-lg hover:bg-gray-100" role="menuitem">Messages</RouterLink>
+            <RouterLink to="/todos" class="block px-4 py-2 text-gray-800 transition-colors duration-300 rounded-lg hover:bg-gray-100" role="menuitem">To-Do's</RouterLink>
           </div>
         </transition>
       </div>
