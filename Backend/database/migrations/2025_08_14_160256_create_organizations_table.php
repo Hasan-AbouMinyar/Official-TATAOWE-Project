@@ -21,6 +21,7 @@ return new class extends Migration
             $table->string('website')->nullable();
             $table->string('field')->nullable();
             $table->string('photo')->nullable();
+            $table->text('description')->nullable();
             $table->timestamps();
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
         });

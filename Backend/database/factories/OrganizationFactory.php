@@ -24,6 +24,7 @@ class OrganizationFactory extends Factory
             'website' => fake()->optional()->url(),
             'field' => fake()->optional()->word(),
             'photo' => null,
+            'description' => fake()->optional()->paragraphs(2, true),
         ];
     }
 }
