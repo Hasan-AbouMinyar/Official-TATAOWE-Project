@@ -18,6 +18,7 @@ class Organization extends Model
         'website',
         'field',
         'photo',
+        'description',
     ];
 
     public function user()
