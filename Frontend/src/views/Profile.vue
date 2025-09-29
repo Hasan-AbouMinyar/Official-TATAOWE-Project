@@ -68,20 +68,20 @@
             </div>
 
             <!-- Stats -->
-            <div class="grid grid-cols-3 gap-4 mt-6 pt-6 border-t">
-              <div class="text-center">
-                <div class="text-2xl font-bold text-gray-900">0</div>
-                <div class="text-xs text-gray-600">Events</div>
+                          <div class="grid grid-cols-3 gap-4 mt-6 pt-6 border-t border-gray-100">
+                <div class="text-center">
+                  <div class="text-2xl font-bold text-gray-900">{{ user?.stats?.events_count || 0 }}</div>
+                  <div class="text-xs text-gray-600">Events</div>
+                </div>
+                <div class="text-center">
+                  <div class="text-2xl font-bold text-gray-900">{{ user?.stats?.applications_count || 0 }}</div>
+                  <div class="text-xs text-gray-600">Applications</div>
+                </div>
+                <div class="text-center">
+                  <div class="text-2xl font-bold text-gray-900">{{ user?.stats?.organizations_count || 0 }}</div>
+                  <div class="text-xs text-gray-600">Organizations</div>
+                </div>
               </div>
-              <div class="text-center">
-                <div class="text-2xl font-bold text-gray-900">0</div>
-                <div class="text-xs text-gray-600">Applications</div>
-              </div>
-              <div class="text-center">
-                <div class="text-2xl font-bold text-gray-900">0</div>
-                <div class="text-xs text-gray-600">Organizations</div>
-              </div>
-            </div>
           </div>
         </div>
       </div>
@@ -289,7 +289,10 @@ const formData = ref({
   phoneNumber: ''
 })
 
-onMounted(() => {
+onMounted(async () => {
+  // Fetch latest user data with statistics
+  await authStore.fetchUser()
+  
   if (user.value) {
     formData.value = {
       name: user.value.name || '',

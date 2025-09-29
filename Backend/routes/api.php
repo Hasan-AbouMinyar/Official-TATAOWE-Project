@@ -77,7 +77,20 @@ Route::middleware('auth:sanctum')->post('/logout', function(Request $request) {
 });
 
 Route::middleware('auth:sanctum')->get('/user', function(Request $request) {
-    return response()->json($request->user());
+    $user = $request->user();
+    
+    // Load counts for statistics
+    $user->load('organizations', 'applications', 'appliedEvents');
+    
+    // Add counts to the response
+    $userData = $user->toArray();
+    $userData['stats'] = [
+        'organizations_count' => $user->organizations()->count(),
+        'applications_count' => $user->applications()->count(),
+        'events_count' => $user->appliedEvents()->count(),
+    ];
+    
+    return response()->json($userData);
 });
 
 Route::middleware('auth:sanctum')->put('/user/profile', function(Request $request) {
@@ -91,9 +104,20 @@ Route::middleware('auth:sanctum')->put('/user/profile', function(Request $reques
     ]);
 
     $user->update($validated);
+    
+    // Refresh user and load statistics
+    $user = $user->fresh();
+    $user->load('organizations', 'applications', 'appliedEvents');
+    
+    $userData = $user->toArray();
+    $userData['stats'] = [
+        'organizations_count' => $user->organizations()->count(),
+        'applications_count' => $user->applications()->count(),
+        'events_count' => $user->appliedEvents()->count(),
+    ];
 
     return response()->json([
         'message' => 'Profile updated successfully',
-        'user' => $user->fresh()
+        'user' => $userData
     ]);
 });
