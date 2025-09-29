@@ -45,3 +45,26 @@ class UserFactory extends Factory
         ]);
     }
 }
+
+// <?php
+// $user = App\Models\User::create([
+//     'name' => 'Demo User',
+//     'username' => 'demo',
+//     'phoneNumber' => '218912345678',
+//     'email' => 'demo@example.com',
+//     'photo' => null,
+//     'password' => bcrypt('password123'),
+// ]);
+
+
+// php artisan tinker
+
+// <?php
+// $user = App\Models\User::create([
+//     'name' => 'Demo User',
+//     'username' => 'demo',
+//     'phoneNumber' => '218912345678',
+//     'email' => 'demo@example.com',
+//     'photo' => null,
+//     'password' => bcrypt('password123'),
+// ]);
