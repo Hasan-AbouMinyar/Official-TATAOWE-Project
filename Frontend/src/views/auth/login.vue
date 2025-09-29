@@ -14,6 +14,35 @@
         </div>
         
         <form class="space-y-6" @submit.prevent="handleLogin">
+          <!-- Error Message -->
+          <div v-if="errorMessage" class="bg-red-50 border border-red-200 rounded-lg p-4">
+            <div class="flex">
+              <div class="flex-shrink-0">
+                <svg class="h-5 w-5 text-red-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                </svg>
+              </div>
+              <div class="ml-3">
+                <p class="text-sm text-red-700">{{ errorMessage }}</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Loading State -->
+          <div v-if="authStore.loading" class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <div class="flex items-center">
+              <div class="flex-shrink-0">
+                <svg class="animate-spin h-5 w-5 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+              </div>
+              <div class="ml-3">
+                <p class="text-sm text-blue-700">Signing in...</p>
+              </div>
+            </div>
+          </div>
+
           <!-- Email -->
           <div>
             <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
@@ -93,9 +122,17 @@
           <div class="pt-2">
             <button 
               type="submit" 
-              class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+              :disabled="authStore.loading"
+              class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Sign In
+              <span v-if="!authStore.loading">Sign In</span>
+              <span v-else class="flex items-center">
+                <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Signing in...
+              </span>
             </button>
           </div>
 
@@ -145,38 +182,31 @@
 </template>
 
 <script setup>
-import { reactive, ref } from 'vue';
-import { useRouter } from 'vue-router';
+import { reactive, ref } from 'vue'
+import { useAuthStore } from '@/stores/auth'
 
-const router = useRouter();
+const authStore = useAuthStore()
 
 const form = reactive({
   email: '',
   password: '',
   remember: false
-});
+})
 
-const showPassword = ref(false);
+const showPassword = ref(false)
+const errorMessage = ref('')
 
-function handleLogin() {
-  // In a real application, you would send the credentials to your API
-  console.log('Login form submitted:', form);
-  
-  // Example API call:
-  // try {
-  //   const response = await fetch('/api/login', {
-  //     method: 'POST',
-  //     headers: { 'Content-Type': 'application/json' },
-  //     body: JSON.stringify(form)
-  //   });
-  //   const data = await response.json();
-  //   // Store token, redirect to dashboard
-  //   router.push({ name: 'Dashboard' });
-  // } catch (error) {
-  //   console.error('Login failed:', error);
-  // }
-  
-  // For now, just redirect to dashboard
-  router.push({ name: 'Dashboard' });
+async function handleLogin() {
+  try {
+    errorMessage.value = ''
+    await authStore.login({
+      email: form.email,
+      password: form.password
+    })
+    // Router navigation is handled in the store
+  } catch (error) {
+    console.error('Login failed:', error)
+    errorMessage.value = error.response?.data?.message || 'Login failed. Please check your credentials.'
+  }
 }
 </script>
