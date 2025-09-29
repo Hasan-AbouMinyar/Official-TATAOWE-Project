@@ -1,184 +1,367 @@
 <template>
-  <section
-    class="relative mx-auto my-8 max-w-4xl overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm ring-1 ring-gray-100/50 px-2 sm:px-0">
-    <!-- Decorative gradient header -->
-    <div class="h-28 w-full bg-gradient-to-r from-blue-600 via-sky-500 to-cyan-400" aria-hidden="true"></div>
+  <div class="p-6">
+    <!-- Page Header -->
+    <div class="mb-6">
+      <h1 class="text-3xl font-bold text-gray-900">Profile</h1>
+      <p class="mt-1 text-sm text-gray-600">Manage your account information and settings</p>
+    </div>
 
-    <!-- Removed decorative blur element for cleaner look and better performance -->
-
-    <!-- Content wrapper -->
-    <div class="px-6 pb-6 pt-0 sm:px-8">
-      <!-- Avatar + name row -->
-      <div class="flex flex-col gap-6 sm:flex-row sm:items-end">
-        <div
-          class="-mt-14 inline-flex items-center justify-center rounded-full bg-white p-1 shadow-lg ring-1 ring-black/5">
-          <div class="relative h-32 w-32 rounded-full">
-            <img v-if="organization.photo" :src="photoSrc" alt="Organization photo"
-              class="h-full w-full rounded-full object-cover ring-2 ring-white" />
-            <div v-else
-              class="flex h-full w-full items-center justify-center rounded-full bg-gradient-to-br from-slate-200 to-slate-300 text-4xl font-semibold text-slate-600 select-none">
-              {{ initials }}
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- Profile Card -->
+      <div class="lg:col-span-1">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+          <!-- Cover Image -->
+          <div class="h-32 bg-gradient-to-r from-blue-500 to-purple-600"></div>
+          
+          <!-- Profile Info -->
+          <div class="relative px-6 pb-6">
+            <!-- Avatar -->
+            <div class="flex justify-center -mt-16 mb-4">
+              <div class="relative">
+                <div class="w-32 h-32 rounded-full border-4 border-white bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center overflow-hidden shadow-lg">
+                  <img 
+                    v-if="user?.photo" 
+                    :src="user.photo" 
+                    :alt="user.name"
+                    class="w-full h-full object-cover"
+                  />
+                  <span v-else class="text-white font-bold text-4xl">
+                    {{ getUserInitials(user?.name) }}
+                  </span>
+                </div>
+                <button 
+                  @click="triggerFileInput"
+                  class="absolute bottom-0 right-0 bg-blue-600 text-white p-2 rounded-full hover:bg-blue-700 transition-colors shadow-lg"
+                  title="Change photo"
+                >
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                </button>
+                <input 
+                  ref="fileInput"
+                  type="file"
+                  accept="image/*"
+                  class="hidden"
+                  @change="handleFileChange"
+                />
+              </div>
             </div>
-            <span
-              class="absolute -bottom-2 -right-2 inline-flex items-center gap-1 rounded-full bg-blue-600 px-2 py-1 text-[10px] font-medium uppercase tracking-wide text-white shadow ring-2 ring-white">
-              Profile
-            </span>
-          </div>
-        </div>
 
-        <div class="flex-1 space-y-3">
-          <div>
-            <h1 class="text-3xl font-semibold tracking-tight text-gray-900">
-              {{ organization.name || 'Unnamed Organization' }}
-            </h1>
-            <p v-if="organization.field"
-              class="mt-1 inline-flex items-center gap-1 rounded-md bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-200">
-              {{ organization.field }}
-            </p>
-          </div>
+            <!-- User Info -->
+            <div class="text-center">
+              <h2 class="text-2xl font-bold text-gray-900">{{ user?.name }}</h2>
+              <p class="text-gray-600 mt-1">@{{ user?.username }}</p>
+              <div class="flex items-center justify-center mt-2 text-sm text-gray-500">
+                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+                {{ user?.email }}
+              </div>
+              <div class="flex items-center justify-center mt-1 text-sm text-gray-500">
+                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                </svg>
+                {{ user?.phoneNumber }}
+              </div>
+            </div>
 
-          <!-- Actions -->
-          <div class="flex flex-wrap gap-3 pt-1">
-            <button type="button"
-              class="group inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/70">
-              <svg xmlns="http://www.w3.org/2000/svg" class="size-4 transition-colors group-hover:text-white"
-                fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                  d="M16.862 4.487l1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897l10.932-10.931Zm0 0L19.5 7.125" />
-              </svg>
-              Edit
-            </button>
-            <button type="button"
-              class="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/70">
-              <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24"
-                stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                  d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-9-9v9m0 0 3-3m-3 3-3-3m9-6V5.25A2.25 2.25 0 0 0 16.5 3h-9A2.25 2.25 0 0 0 5.25 5.25V7.5" />
-              </svg>
-              Export
-            </button>
+            <!-- Stats -->
+            <div class="grid grid-cols-3 gap-4 mt-6 pt-6 border-t">
+              <div class="text-center">
+                <div class="text-2xl font-bold text-gray-900">0</div>
+                <div class="text-xs text-gray-600">Events</div>
+              </div>
+              <div class="text-center">
+                <div class="text-2xl font-bold text-gray-900">0</div>
+                <div class="text-xs text-gray-600">Applications</div>
+              </div>
+              <div class="text-center">
+                <div class="text-2xl font-bold text-gray-900">0</div>
+                <div class="text-xs text-gray-600">Organizations</div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-      <!-- Divider -->
-      <div class="mt-8 h-px w-full bg-gradient-to-r from-transparent via-gray-200 to-transparent"></div>
-
-      <!-- Info grid -->
-      <dl class="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        <div class="flex gap-3">
-          <div class="mt-0.5 text-gray-400">
-            <svg xmlns="http://www.w3.org/2000/svg" class="size-5" fill="none" viewBox="0 0 24 24"
-              stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                d="M21.75 7.5v9a2.25 2.25 0 0 1-2.25 2.25h-15A2.25 2.25 0 0 1 2.25 16.5v-9m19.5 0A2.25 2.25 0 0 0 19.5 5.25h-15A2.25 2.25 0 0 0 2.25 7.5m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.688a2.25 2.25 0 0 1-2.36 0l-7.5-4.688A2.25 2.25 0 0 1 2.25 7.743V7.5" />
-            </svg>
+      <!-- Profile Details & Edit Form -->
+      <div class="lg:col-span-2 space-y-6">
+        <!-- Personal Information -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div class="flex items-center justify-between mb-6">
+            <h3 class="text-xl font-semibold text-gray-900">Personal Information</h3>
+            <button 
+              v-if="!isEditing"
+              @click="startEditing"
+              class="flex items-center px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
+            >
+              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+              </svg>
+              Edit Profile
+            </button>
           </div>
-          <div class="min-w-0">
-            <dt class="text-xs font-semibold uppercase tracking-wide text-gray-500">Email</dt>
-            <dd class="mt-1 text-sm font-medium text-gray-900 break-all" v-if="organization.email">
-              <a :href="`mailto:${organization.email}`" class="text-blue-600 hover:underline">{{ organization.email
-                }}</a>
-            </dd>
-            <dd v-else class="mt-1 text-sm text-gray-400">Not set</dd>
+
+          <form @submit.prevent="handleSubmit" class="space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <!-- Full Name -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
+                <input 
+                  v-model="formData.name"
+                  :disabled="!isEditing"
+                  type="text"
+                  class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
+                  placeholder="John Doe"
+                />
+              </div>
+
+              <!-- Username -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Username</label>
+                <input 
+                  v-model="formData.username"
+                  :disabled="!isEditing"
+                  type="text"
+                  class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
+                  placeholder="johndoe"
+                />
+              </div>
+
+              <!-- Email -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
+                <input 
+                  v-model="formData.email"
+                  :disabled="!isEditing"
+                  type="email"
+                  class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
+                  placeholder="john@example.com"
+                />
+              </div>
+
+              <!-- Phone Number -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
+                <input 
+                  v-model="formData.phoneNumber"
+                  :disabled="!isEditing"
+                  type="tel"
+                  class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-500"
+                  placeholder="+1234567890"
+                />
+              </div>
+            </div>
+
+            <!-- Success/Error Messages -->
+            <div v-if="successMessage" class="p-4 bg-green-50 border border-green-200 rounded-lg">
+              <p class="text-sm text-green-800">{{ successMessage }}</p>
+            </div>
+            <div v-if="errorMessage" class="p-4 bg-red-50 border border-red-200 rounded-lg">
+              <p class="text-sm text-red-800">{{ errorMessage }}</p>
+            </div>
+
+            <!-- Action Buttons -->
+            <div v-if="isEditing" class="flex items-center gap-3 pt-4 border-t">
+              <button 
+                type="submit"
+                :disabled="loading"
+                class="px-6 py-2.5 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                <span v-if="loading">Saving...</span>
+                <span v-else>Save Changes</span>
+              </button>
+              <button 
+                type="button"
+                @click="cancelEditing"
+                :disabled="loading"
+                class="px-6 py-2.5 bg-gray-100 text-gray-700 font-medium rounded-lg hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Account Settings -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <h3 class="text-xl font-semibold text-gray-900 mb-6">Account Settings</h3>
+          
+          <div class="space-y-4">
+            <!-- Change Password -->
+            <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+              <div class="flex items-center">
+                <div class="p-2 bg-blue-100 rounded-lg mr-3">
+                  <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+                  </svg>
+                </div>
+                <div>
+                  <h4 class="font-medium text-gray-900">Change Password</h4>
+                  <p class="text-sm text-gray-600">Update your password regularly</p>
+                </div>
+              </div>
+              <button class="px-4 py-2 text-sm font-medium text-blue-600 hover:text-blue-700">
+                Change
+              </button>
+            </div>
+
+            <!-- Email Verification -->
+            <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+              <div class="flex items-center">
+                <div class="p-2 bg-green-100 rounded-lg mr-3">
+                  <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <div>
+                  <h4 class="font-medium text-gray-900">Email Verification</h4>
+                  <p class="text-sm text-gray-600">
+                    <span v-if="user?.email_verified_at" class="text-green-600">Verified</span>
+                    <span v-else class="text-orange-600">Not verified</span>
+                  </p>
+                </div>
+              </div>
+              <button v-if="!user?.email_verified_at" class="px-4 py-2 text-sm font-medium text-blue-600 hover:text-blue-700">
+                Verify
+              </button>
+            </div>
+
+            <!-- Two-Factor Authentication -->
+            <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+              <div class="flex items-center">
+                <div class="p-2 bg-purple-100 rounded-lg mr-3">
+                  <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                  </svg>
+                </div>
+                <div>
+                  <h4 class="font-medium text-gray-900">Two-Factor Authentication</h4>
+                  <p class="text-sm text-gray-600">Add an extra layer of security</p>
+                </div>
+              </div>
+              <button class="px-4 py-2 text-sm font-medium text-blue-600 hover:text-blue-700">
+                Enable
+              </button>
+            </div>
           </div>
         </div>
 
-        <div class="flex gap-3">
-          <div class="mt-0.5 text-gray-400">
-            <svg xmlns="http://www.w3.org/2000/svg" class="size-5" fill="none" viewBox="0 0 24 24"
-              stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                d="M2.25 6.75c0 8.284 6.716 15 15 15h1.145a2.25 2.25 0 0 0 2.238-2.013l.37-3.081a2.25 2.25 0 0 0-1.282-2.278l-2.478-1.103a2.25 2.25 0 0 0-2.588.597l-.97 1.09a1.5 1.5 0 0 1-1.888.312 12.035 12.035 0 0 1-4.51-4.51 1.5 1.5 0 0 1 .312-1.888l1.09-.97a2.25 2.25 0 0 0 .597-2.588L9.622 3.78A2.25 2.25 0 0 0 7.344 2.5l-3.081.37A2.25 2.25 0 0 0 2.25 5.108V6.75Z" />
-            </svg>
-          </div>
-          <div class="min-w-0">
-            <dt class="text-xs font-semibold uppercase tracking-wide text-gray-500">Phone</dt>
-            <dd class="mt-1 text-sm font-medium text-gray-900" v-if="organization.phone">
-              <a :href="`tel:${organization.phone}`" class="text-blue-600 hover:underline">{{ organization.phone }}</a>
-            </dd>
-            <dd v-else class="mt-1 text-sm text-gray-400">Not set</dd>
-          </div>
-        </div>
-
-        <div class="flex gap-3">
-          <div class="mt-0.5 text-gray-400">
-            <svg xmlns="http://www.w3.org/2000/svg" class="size-5" fill="none" viewBox="0 0 24 24"
-              stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Zm0 0c2.5 0 4.5-4 4.5-9S14.5 3 12 3m0 18c-2.5 0-4.5-4-4.5-9S9.5 3 12 3m-7.5 9h15" />
-            </svg>
-          </div>
-          <div class="min-w-0">
-            <dt class="text-xs font-semibold uppercase tracking-wide text-gray-500">Website</dt>
-            <dd class="mt-1 text-sm font-medium text-gray-900 break-all" v-if="organization.website">
-              <a :href="normalizedWebsite" target="_blank" rel="noopener" class="text-blue-600 hover:underline">{{
-                organization.website }}</a>
-            </dd>
-            <dd v-else class="mt-1 text-sm text-gray-400">Not set</dd>
+        <!-- Danger Zone -->
+        <div class="bg-white rounded-xl shadow-sm border border-red-200 p-6">
+          <h3 class="text-xl font-semibold text-red-600 mb-4">Danger Zone</h3>
+          <div class="space-y-4">
+            <div class="flex items-center justify-between p-4 bg-red-50 rounded-lg">
+              <div>
+                <h4 class="font-medium text-gray-900">Delete Account</h4>
+                <p class="text-sm text-gray-600">Permanently delete your account and all data</p>
+              </div>
+              <button class="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700">
+                Delete
+              </button>
+            </div>
           </div>
         </div>
-
-        <div class="flex gap-3 sm:col-span-2 lg:col-span-3">
-          <div class="mt-0.5 text-gray-400">
-            <svg xmlns="http://www.w3.org/2000/svg" class="size-5" fill="none" viewBox="0 0 24 24"
-              stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm6 0c0 7.142-9 11.25-9 11.25S3 17.642 3 10.5a9 9 0 1 1 18 0Z" />
-            </svg>
-          </div>
-          <div class="flex-1">
-            <dt class="text-xs font-semibold uppercase tracking-wide text-gray-500">Address</dt>
-            <dd class="mt-1 text-sm font-medium text-gray-900" v-if="organization.address">{{ organization.address }}
-            </dd>
-            <dd v-else class="mt-1 text-sm text-gray-400">Not set</dd>
-          </div>
-        </div>
-      </dl>
+      </div>
     </div>
-  </section>
+  </div>
 </template>
 
 <script setup>
-import { computed } from 'vue'
-// Props provide organization data (all optional)
-const props = defineProps({
-  organization: {
-    type: Object,
-    required: false,
-    default: () => ({
-      name: 'Example Organization',
-      email: 'info@example.org',
-      phone: '+1 (555) 123-4567',
-      address: '123 Main Street, Sample City',
-      website: 'https://example.org',
-      field: 'Technology',
-      photo: null
-    })
+import { ref, computed, onMounted } from 'vue'
+import { useAuthStore } from '../stores/auth'
+
+const authStore = useAuthStore()
+const user = computed(() => authStore.user)
+
+const isEditing = ref(false)
+const loading = ref(false)
+const successMessage = ref('')
+const errorMessage = ref('')
+const fileInput = ref(null)
+
+const formData = ref({
+  name: '',
+  username: '',
+  email: '',
+  phoneNumber: ''
+})
+
+onMounted(() => {
+  if (user.value) {
+    formData.value = {
+      name: user.value.name || '',
+      username: user.value.username || '',
+      email: user.value.email || '',
+      phoneNumber: user.value.phoneNumber || ''
+    }
   }
 })
 
-// Computed helpers
-const photoSrc = computed(() => props.organization.photo)
+function getUserInitials(name) {
+  if (!name) return 'U'
+  const names = name.split(' ')
+  if (names.length >= 2) {
+    return (names[0][0] + names[1][0]).toUpperCase()
+  }
+  return name.substring(0, 2).toUpperCase()
+}
 
+function startEditing() {
+  isEditing.value = true
+  successMessage.value = ''
+  errorMessage.value = ''
+}
 
-const normalizedWebsite = computed(() => {
-  const w = props.organization.website
-  if (!w) return ''
-  if (/^https?:\/\//i.test(w)) return w
-  return 'https://' + w
-})
+function cancelEditing() {
+  isEditing.value = false
+  // Reset form data
+  if (user.value) {
+    formData.value = {
+      name: user.value.name || '',
+      username: user.value.username || '',
+      email: user.value.email || '',
+      phoneNumber: user.value.phoneNumber || ''
+    }
+  }
+  successMessage.value = ''
+  errorMessage.value = ''
+}
 
+async function handleSubmit() {
+  try {
+    loading.value = true
+    errorMessage.value = ''
+    successMessage.value = ''
 
+    await authStore.updateProfile(formData.value)
+    
+    successMessage.value = 'Profile updated successfully!'
+    isEditing.value = false
+    
+    setTimeout(() => {
+      successMessage.value = ''
+    }, 3000)
+  } catch (error) {
+    console.error('Update profile failed:', error)
+    errorMessage.value = error.response?.data?.message || 'Failed to update profile. Please try again.'
+  } finally {
+    loading.value = false
+  }
+}
 
-const initials = computed(() => {
-  const name = (props.organization.name || '').trim()
-  if (!name) return '??'
-  const parts = name.split(/\s+/).slice(0, 2)
-  return parts.map(p => p[0]).join('').toUpperCase()
-})
+function triggerFileInput() {
+  fileInput.value?.click()
+}
+
+function handleFileChange(event) {
+  const file = event.target.files?.[0]
+  if (file) {
+    // Here you would typically upload the file
+    console.log('Selected file:', file)
+    // TODO: Implement file upload
+  }
+}
 </script>
-
-<style scoped>
-/* Optional custom scrollbar or future overrides */
-</style>

@@ -54,6 +54,19 @@
                     </svg>
                 </router-link>
 
+                <!-- Profile Link -->
+                <router-link :to="{ name: 'Profile' }"
+                    class="p-2 transition-colors duration-300 rounded-lg group hover:bg-white"
+                    active-class="p-3 transition-colors duration-300 bg-white rounded-lg">
+                    <svg class="w-5 h-5 stroke-blue-100/50" viewBox="0 0 24 24" fill="none"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path class="group-hover:stroke-blue-700"
+                            d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"
+                            fill="#969CBA" fill-opacity="0.2" stroke="#969CBA" stroke-width="2" stroke-linecap="round"
+                            stroke-linejoin="round" />
+                    </svg>
+                </router-link>
+
                 <!-- My Organizations List View -->
                 <router-link :to="{ name: 'MyOrganizations' }"
                     class="p-2 transition-colors duration-300 rounded-lg group hover:bg-white"

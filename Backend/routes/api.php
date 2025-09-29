@@ -79,3 +79,21 @@ Route::middleware('auth:sanctum')->post('/logout', function(Request $request) {
 Route::middleware('auth:sanctum')->get('/user', function(Request $request) {
     return response()->json($request->user());
 });
+
+Route::middleware('auth:sanctum')->put('/user/profile', function(Request $request) {
+    $user = $request->user();
+    
+    $validated = $request->validate([
+        'name' => 'sometimes|required|string|max:255',
+        'username' => 'sometimes|required|string|max:255|unique:users,username,' . $user->id,
+        'email' => 'sometimes|required|string|email|max:255|unique:users,email,' . $user->id,
+        'phoneNumber' => 'sometimes|required|string|max:20|unique:users,phoneNumber,' . $user->id,
+    ]);
+
+    $user->update($validated);
+
+    return response()->json([
+        'message' => 'Profile updated successfully',
+        'user' => $user->fresh()
+    ]);
+});
