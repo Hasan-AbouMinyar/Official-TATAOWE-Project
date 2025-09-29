@@ -33,9 +33,49 @@ Route::post('/login', function(Request $request) {
     }
 
     $user = Auth::user();
+    $token = $user->createToken('auth_token')->plainTextToken;
 
     return response()->json([
         'message' => 'تم تسجيل الدخول بنجاح',
-        'user' => $user
+        'user' => $user,
+        'token' => $token
     ]);
+});
+
+Route::post('/register', function(Request $request) {
+    $validated = $request->validate([
+        'name' => 'required|string|max:255',
+        'username' => 'required|string|max:255|unique:users',
+        'phoneNumber' => 'required|string|max:20|unique:users',
+        'email' => 'required|string|email|max:255|unique:users',
+        'password' => 'required|string|min:8',
+    ]);
+
+    $user = \App\Models\User::create([
+        'name' => $validated['name'],
+        'username' => $validated['username'],
+        'phoneNumber' => $validated['phoneNumber'],
+        'email' => $validated['email'],
+        'password' => bcrypt($validated['password']),
+    ]);
+
+    $token = $user->createToken('auth_token')->plainTextToken;
+
+    return response()->json([
+        'message' => 'تم إنشاء الحساب بنجاح',
+        'user' => $user,
+        'token' => $token
+    ], 201);
+});
+
+Route::middleware('auth:sanctum')->post('/logout', function(Request $request) {
+    $request->user()->currentAccessToken()->delete();
+
+    return response()->json([
+        'message' => 'تم تسجيل الخروج بنجاح'
+    ]);
+});
+
+Route::middleware('auth:sanctum')->get('/user', function(Request $request) {
+    return response()->json($request->user());
 });
