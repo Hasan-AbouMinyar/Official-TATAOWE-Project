@@ -29,14 +29,14 @@ Route::post('/login', function(Request $request) {
     $credentials = $request->only('email', 'password');
 
     if(!Auth::attempt($credentials)) {
-        return response()->json(['message' => 'بيانات الدخول غير صحيحة'], 401);
+        return response()->json(['message' => 'Invalid credentials'], 401);
     }
 
     $user = Auth::user();
     $token = $user->createToken('auth_token')->plainTextToken;
 
     return response()->json([
-        'message' => 'تم تسجيل الدخول بنجاح',
+        'message' => 'Login successful',
         'user' => $user,
         'token' => $token
     ]);
@@ -62,7 +62,7 @@ Route::post('/register', function(Request $request) {
     $token = $user->createToken('auth_token')->plainTextToken;
 
     return response()->json([
-        'message' => 'تم إنشاء الحساب بنجاح',
+        'message' => 'Account created successfully',
         'user' => $user,
         'token' => $token
     ], 201);
@@ -72,7 +72,7 @@ Route::middleware('auth:sanctum')->post('/logout', function(Request $request) {
     $request->user()->currentAccessToken()->delete();
 
     return response()->json([
-        'message' => 'تم تسجيل الخروج بنجاح'
+        'message' => 'Logged out successfully'
     ]);
 });
 
