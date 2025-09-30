@@ -1,10 +1,10 @@
 <template>
   <!-- Enhanced Organization Card -->
   <div class="group relative bg-white rounded-2xl shadow-md hover:shadow-2xl transition-all duration-300 overflow-hidden transform hover:-translate-y-1">
-    <!-- Card Content -->
-    <router-link 
-      :to="organization && organization.url ? organization.url : { name: 'Dashboard' }" 
-      class="block p-6"
+    <!-- Card Content - Clickable -->
+    <div 
+      @click="$emit('select', organization)" 
+      class="block p-6 cursor-pointer"
     >
       <!-- Organization Header -->
       <div class="flex items-start justify-between mb-4">
@@ -69,7 +69,7 @@
 
       <!-- Hover Effect Indicator -->
       <div class="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 to-purple-600 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
-    </router-link>
+    </div>
 
     <!-- Dropdown Menu -->
     <transition
@@ -151,7 +151,7 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(['delete', 'edit', 'view'])
+const emit = defineEmits(['delete', 'edit', 'view', 'select'])
 
 function toggleDropdown() {
   isDropdownOpen.value = !isDropdownOpen.value

@@ -1,6 +1,14 @@
 <template>
   <header class="flex items-center justify-between h-20 px-6 bg-white border-b">
-    <div class="relative flex items-center">
+    <!-- Organization Mode Banner -->
+    <div v-if="isOrganizationMode" class="absolute top-0 left-0 right-0 bg-gradient-to-r from-blue-600 to-purple-600 text-white text-center py-1 text-sm font-medium flex items-center justify-center gap-2">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+      </svg>
+      <span>Organization Mode: {{ organizationName }}</span>
+    </div>
+    
+    <div class="relative flex items-center" :class="{ 'mt-6': isOrganizationMode }">
       <span class="absolute inset-y-0 left-0 flex items-center pl-3">
         <svg class="w-5 h-5 text-gray-400" viewBox="0 0 24 24" fill="none">
           <path d="M21 21L15 15M17 10C17 13.866 13.866 17 10 17C6.13401 17 3 13.866 3 10C3 6.13401 6.13401 3 10 3C13.866 3 17 6.13401 17 10Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
@@ -8,31 +16,72 @@
       </span>
       <input type="text" class="py-2.5 pl-10 pr-4 text-gray-700 placeholder-gray-400 bg-white border border-transparent border-gray-200 rounded-lg sm:w-auto w-36 focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40" placeholder="Search" />
     </div>
-    <div class="flex items-center">
+    <div class="flex items-center" :class="{ 'mt-6': isOrganizationMode }">
       <div class="relative">
         <button class="transition-colors duration-300 rounded-lg sm:px-4 sm:py-2 focus:outline-none hover:bg-gray-100" @click="dropdownOpen = !dropdownOpen" :aria-expanded="dropdownOpen.toString()" aria-haspopup="menu">
           <span class="sr-only">User Menu</span>
           <div class="flex items-center md:-mx-2">
             <div class="hidden md:mx-2 md:flex md:flex-col md:items-end md:leading-tight">
-              <span class="font-semibold text-sm text-gray-800">{{ user?.name || 'User' }}</span>
-              <span class="text-sm text-gray-600">{{ user?.email || '' }}</span>
+              <span class="font-semibold text-sm text-gray-800">
+                {{ isOrganizationMode ? organizationName : (user?.name || 'User') }}
+              </span>
+              <span class="text-sm text-gray-600">
+                {{ isOrganizationMode ? 'Organization Account' : (user?.email || '') }}
+              </span>
             </div>
             <div class="flex-shrink-0 w-10 h-10 overflow-hidden bg-gradient-to-br from-blue-500 to-purple-600 rounded-full md:mx-2 flex items-center justify-center">
               <img 
-                v-if="user?.photo" 
+                v-if="isOrganizationMode && activeOrganization?.logo" 
+                :src="activeOrganization.logo" 
+                :alt="organizationName" 
+                class="w-full h-full object-cover"
+              />
+              <img 
+                v-else-if="!isOrganizationMode && user?.photo" 
                 :src="user.photo" 
                 :alt="user.name" 
                 class="w-full h-full object-cover"
               />
               <span v-else class="text-white font-semibold text-lg">
-                {{ getUserInitials(user?.name) }}
+                {{ getUserInitials(isOrganizationMode ? organizationName : user?.name) }}
               </span>
             </div>
           </div>
         </button>
         <transition enter-active-class="transition duration-200 ease-out" enter-from-class="transform scale-95 opacity-0" enter-to-class="transform scale-100 opacity-100" leave-active-class="transition duration-75 ease-in" leave-from-class="transform scale-100 opacity-100" leave-to-class="transform scale-95 opacity-0">
           <div class="absolute right-0 z-50 w-56 p-2 bg-white border rounded-lg shadow-lg top-16 lg:top-20" v-show="dropdownOpen" role="menu">
-            <RouterLink :to="{ name: 'Profile' }" class="block px-4 py-2 text-gray-800 transition-colors duration-300 rounded-lg hover:bg-gray-100" role="menuitem">
+            <!-- Organization Mode Menu -->
+            <template v-if="isOrganizationMode">
+              <RouterLink :to="{ name: 'Dashboard' }" class="block px-4 py-2 text-gray-800 transition-colors duration-300 rounded-lg hover:bg-gray-100" role="menuitem">
+                <div class="flex items-center">
+                  <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                  </svg>
+                  Organization Dashboard
+                </div>
+              </RouterLink>
+              <RouterLink :to="{ name: 'MyOrganizations' }" class="block px-4 py-2 text-gray-800 transition-colors duration-300 rounded-lg hover:bg-gray-100" role="menuitem">
+                <div class="flex items-center">
+                  <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                  </svg>
+                  Switch Organization
+                </div>
+              </RouterLink>
+              <hr class="my-2 border-gray-200" />
+              <button @click="handleBackToPersonal" class="w-full text-left px-4 py-2 text-blue-600 transition-colors duration-300 rounded-lg hover:bg-blue-50" role="menuitem">
+                <div class="flex items-center">
+                  <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 17l-5-5m0 0l5-5m-5 5h12" />
+                  </svg>
+                  Back to Personal Account
+                </div>
+              </button>
+            </template>
+            
+            <!-- Personal Account Menu -->
+            <template v-else>
+              <RouterLink :to="{ name: 'Profile' }" class="block px-4 py-2 text-gray-800 transition-colors duration-300 rounded-lg hover:bg-gray-100" role="menuitem">
               <div class="flex items-center">
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -66,6 +115,7 @@
                 Logout
               </div>
             </button>
+            </template>
           </div>
         </transition>
       </div>
@@ -83,15 +133,25 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useAuthStore } from '../../stores/auth'
+import { useOrganizationStore } from '../../stores/organization'
 import { useRouter } from 'vue-router'
 
 const dropdownOpen = ref(false)
 const authStore = useAuthStore()
+const organizationStore = useOrganizationStore()
 const router = useRouter()
 
 const user = computed(() => authStore.user)
+const isOrganizationMode = computed(() => organizationStore.isOrganizationMode)
+const organizationName = computed(() => organizationStore.organizationName)
+const activeOrganization = computed(() => organizationStore.activeOrganization)
+
+onMounted(() => {
+  // Restore organization mode if it was active
+  organizationStore.restoreOrganizationMode()
+})
 
 function getUserInitials(name) {
   if (!name) return 'U'
@@ -105,9 +165,16 @@ function getUserInitials(name) {
 async function handleLogout() {
   try {
     await authStore.logout()
+    organizationStore.clearOrganizationData()
     router.push({ name: 'Login' })
   } catch (error) {
     console.error('Logout failed:', error)
   }
+}
+
+function handleBackToPersonal() {
+  organizationStore.switchToPersonalAccount()
+  dropdownOpen.value = false
+  router.push({ name: 'Dashboard' })
 }
 </script>

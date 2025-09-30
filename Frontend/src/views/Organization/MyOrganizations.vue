@@ -119,6 +119,7 @@
           :key="org.id" 
           :organization="org" 
           @delete="handleDelete"
+          @select="handleSelectOrganization"
         />
       </div>
     </div>
@@ -127,11 +128,15 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { useOrganizationStore } from '@/stores/organization'
 import api from '@/api'
 import OrganizationCard from '@/components/OrganizationCard.vue'
 
 const authStore = useAuthStore()
+const organizationStore = useOrganizationStore()
+const router = useRouter()
 
 // State
 const organizations = ref([])
@@ -183,6 +188,15 @@ async function handleDelete(org) {
     console.error('Error deleting organization:', err)
     alert(err.response?.data?.message || 'Failed to delete organization. Please try again.')
   }
+}
+
+// Handle organization selection
+function handleSelectOrganization(org) {
+  // Switch to organization mode
+  organizationStore.switchToOrganization(org)
+  
+  // Navigate to organization dashboard
+  router.push({ name: 'Dashboard' })
 }
 
 // Get last update time
