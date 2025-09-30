@@ -67,18 +67,7 @@
               <!-- Actions -->
               <div class="flex gap-3">
                 <button
-                  v-if="canEdit"
-                  @click="$router.push(`/events/${event.id}/edit`)"
-                  class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2"
-                >
-                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                  </svg>
-                  Edit
-                </button>
-
-                <button
-                  v-if="!canEdit && !hasApplied"
+                  v-if="!hasApplied"
                   @click="applyToEvent"
                   :disabled="applying"
                   class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
@@ -207,45 +196,6 @@ const error = ref(null)
 const applying = ref(false)
 const hasApplied = ref(false)
 
-const canEdit = computed(() => {
-  if (!event.value) {
-    console.log('canEdit: No event loaded')
-    return false
-  }
-  
-  if (!authStore.user) {
-    console.log('canEdit: No user logged in')
-    return false
-  }
-  
-  if (!event.value.organization) {
-    console.log('canEdit: Event has no organization')
-    return false
-  }
-  
-  // Check if current user owns the organization that created this event
-  const organizationUserId = event.value.organization.user_id
-  const currentUserId = authStore.user.id
-  
-  console.log('canEdit check:', {
-    eventId: event.value.id,
-    eventName: event.value.name,
-    organizationId: event.value.organization.id,
-    organizationName: event.value.organization.name,
-    organizationUserId: organizationUserId,
-    currentUserId: currentUserId,
-    currentUserName: authStore.user.name,
-    match: organizationUserId === currentUserId,
-    types: {
-      orgUserId: typeof organizationUserId,
-      currentUserId: typeof currentUserId
-    }
-  })
-  
-  // Important: Compare as numbers to avoid string vs number comparison issues
-  return Number(organizationUserId) === Number(currentUserId)
-})
-
 const skillsArray = computed(() => {
   if (!event.value?.requiredSkills) return []
   return event.value.requiredSkills.split(',').map(s => s.trim()).filter(s => s)
@@ -265,14 +215,6 @@ async function loadEvent() {
       headers: { Authorization: `Bearer ${token}` }
     })
     event.value = response.data
-    console.log('Event loaded:', {
-      eventId: event.value.id,
-      eventName: event.value.name,
-      organization: event.value.organization,
-      organizationUserId: event.value.organization?.user_id,
-      currentUser: authStore.user,
-      currentUserId: authStore.user?.id
-    })
   } catch (err) {
     console.error('Error loading event:', err)
     error.value = err.response?.data?.message || 'Failed to load event'
