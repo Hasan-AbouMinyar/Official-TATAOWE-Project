@@ -13,7 +13,14 @@ export default {
 
   // Create event
   create(eventData) {
-    return apiClient.post('/events', eventData)
+    // Check if eventData is FormData (for file uploads)
+    const isFormData = eventData instanceof FormData
+    
+    return apiClient.post('/events', eventData, {
+      headers: isFormData ? {
+        'Content-Type': 'multipart/form-data'
+      } : {}
+    })
   },
 
   // Update event

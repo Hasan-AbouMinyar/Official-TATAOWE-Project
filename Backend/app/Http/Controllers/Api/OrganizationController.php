@@ -108,6 +108,32 @@ class OrganizationController extends Controller
 
     public function events(Organization $organization)
     {
-        return $organization->events;
+        $events = $organization->events()
+            ->with(['reviews' => function($query) {
+                $query->select('event_id', 'rating');
+            }])
+            ->withCount('applications')
+            ->latest() // ← إضافة ترتيب من الأحدث للأقدم
+            ->get()
+            ->map(function($event) use ($organization) {
+                $event->average_rating = round($event->reviews->avg('rating'), 1);
+                $event->total_reviews = $event->reviews->count();
+                unset($event->reviews);
+                
+                // Return full photo URL
+                if ($event->photo) {
+                    $event->photo = asset('storage/' . $event->photo);
+                }
+                
+                // Add organization with full logo URL
+                $event->organization = $organization;
+                if ($event->organization->logo) {
+                    $event->organization->logo = asset('storage/' . $event->organization->logo);
+                }
+                
+                return $event;
+            });
+        
+        return response()->json($events);
     }
 }

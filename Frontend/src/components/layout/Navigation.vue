@@ -60,6 +60,14 @@
                   Organization Dashboard
                 </div>
               </RouterLink>
+              <RouterLink :to="{ name: 'EventCreate' }" class="block px-4 py-2 text-gray-800 transition-colors duration-300 rounded-lg hover:bg-gray-100" role="menuitem">
+                <div class="flex items-center">
+                  <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                  </svg>
+                  Create Event
+                </div>
+              </RouterLink>
               <RouterLink :to="{ name: 'OrganizationProfile', params: { id: organizationId } }" class="block px-4 py-2 text-gray-800 transition-colors duration-300 rounded-lg hover:bg-gray-100" role="menuitem">
                 <div class="flex items-center">
                   <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">

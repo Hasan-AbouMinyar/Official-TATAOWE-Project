@@ -71,6 +71,21 @@
                         </svg>
                     </router-link>
 
+                    <!-- Create Event -->
+                    <router-link :to="{ name: 'EventCreate' }"
+                        class="p-2 transition-colors duration-300 rounded-lg group hover:bg-white"
+                        active-class="p-3 transition-colors duration-300 bg-white rounded-lg"
+                        title="Create Event">
+                        <svg class="w-5 h-5 stroke-blue-100/50" viewBox="0 0 24 24" fill="none"
+                            xmlns="http://www.w3.org/2000/svg">
+                            <path class="group-hover:stroke-blue-700"
+                                d="M12 4V20M20 12H4"
+                                fill="none" stroke="#969CBA" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round" />
+                            <circle cx="12" cy="12" r="9" class="group-hover:stroke-blue-700" fill="#969CBA" fill-opacity="0.2" stroke="#969CBA" stroke-width="2" />
+                        </svg>
+                    </router-link>
+
                     <!-- Switch Organization -->
                     <router-link :to="{ name: 'MyOrganizations' }"
                         class="p-2 transition-colors duration-300 rounded-lg group hover:bg-white"

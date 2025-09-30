@@ -32,6 +32,12 @@ const routes = [
         meta: { requiresAuth: true }
     },
     {
+        path: '/events/create',
+        name: 'EventCreate',
+        component: () => import('@/views/Event/Create.vue'),
+        meta: { requiresAuth: true }
+    },
+    {
         path: '/profile',
         name: 'Profile',
         component: () => import('@/views/Profile.vue'),

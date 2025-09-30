@@ -4,8 +4,8 @@
       <!-- Organization Avatar -->
       <div class="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center overflow-hidden">
         <img 
-          v-if="event.organization?.photo" 
-          :src="event.organization.photo" 
+          v-if="event.organization?.logo" 
+          :src="event.organization.logo" 
           :alt="event.organization.name"
           class="w-full h-full object-cover"
         />
