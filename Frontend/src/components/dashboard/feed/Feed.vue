@@ -63,10 +63,13 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
+import { useOrganizationStore } from '@/stores/organization'
 import Card from './Card.vue'
 import RightRail from './RightRail.vue'
 import api from '@/api'
+
+const organizationStore = useOrganizationStore()
 
 const events = ref([])
 const loading = ref(false)
@@ -74,6 +77,9 @@ const loadingMore = ref(false)
 const error = ref(null)
 const currentPage = ref(1)
 const hasMorePages = ref(false)
+
+const isOrganizationMode = computed(() => organizationStore.isOrganizationMode)
+const organizationId = computed(() => organizationStore.organizationId)
 
 async function fetchEvents(page = 1) {
   try {
@@ -84,16 +90,37 @@ async function fetchEvents(page = 1) {
     }
     error.value = null
 
-    const response = await api.events.getAll({ page })
+    let response;
     
-    if (page === 1) {
-      events.value = response.data.data
+    // If in organization mode, fetch only organization's events
+    if (isOrganizationMode.value && organizationId.value) {
+      // Get organization's events directly
+      response = await api.organizations.getEvents(organizationId.value)
+      
+      // Format response to match expected structure
+      const orgEvents = response.data || []
+      
+      if (page === 1) {
+        events.value = orgEvents
+      } else {
+        events.value = [...events.value, ...orgEvents]
+      }
+      
+      // No pagination for organization events
+      hasMorePages.value = false
     } else {
-      events.value = [...events.value, ...response.data.data]
+      // Personal mode: get all events with pagination
+      response = await api.events.getAll({ page })
+      
+      if (page === 1) {
+        events.value = response.data.data
+      } else {
+        events.value = [...events.value, ...response.data.data]
+      }
+      
+      currentPage.value = response.data.current_page
+      hasMorePages.value = response.data.current_page < response.data.last_page
     }
-    
-    currentPage.value = response.data.current_page
-    hasMorePages.value = response.data.current_page < response.data.last_page
   } catch (err) {
     console.error('Failed to fetch events:', err)
     error.value = 'Failed to load events. Please try again.'
@@ -106,6 +133,13 @@ async function fetchEvents(page = 1) {
 function loadMore() {
   fetchEvents(currentPage.value + 1)
 }
+
+// Watch for organization mode changes
+watch([isOrganizationMode, organizationId], () => {
+  // Reset and reload events when switching between modes or organizations
+  currentPage.value = 1
+  fetchEvents(1)
+})
 
 onMounted(() => {
   fetchEvents()

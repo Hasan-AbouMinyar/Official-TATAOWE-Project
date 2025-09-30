@@ -23,7 +23,15 @@ export default {
 
   // Update organization
   update(id, organizationData) {
-    return apiClient.put(`/organizations/${id}`, organizationData)
+    // Check if organizationData is FormData (for file uploads)
+    const isFormData = organizationData instanceof FormData
+    
+    return apiClient.post(`/organizations/${id}`, organizationData, {
+      headers: isFormData ? {
+        'Content-Type': 'multipart/form-data'
+      } : {},
+      params: isFormData ? { _method: 'PUT' } : {}
+    })
   },
 
   // Delete organization

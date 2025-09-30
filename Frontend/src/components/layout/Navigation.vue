@@ -60,10 +60,26 @@
                   Organization Dashboard
                 </div>
               </RouterLink>
-              <RouterLink :to="{ name: 'MyOrganizations' }" class="block px-4 py-2 text-gray-800 transition-colors duration-300 rounded-lg hover:bg-gray-100" role="menuitem">
+              <RouterLink :to="{ name: 'OrganizationProfile', params: { id: organizationId } }" class="block px-4 py-2 text-gray-800 transition-colors duration-300 rounded-lg hover:bg-gray-100" role="menuitem">
                 <div class="flex items-center">
                   <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                  </svg>
+                  Organization Profile
+                </div>
+              </RouterLink>
+              <RouterLink :to="{ name: 'OrganizationEdit', params: { id: organizationId } }" class="block px-4 py-2 text-gray-800 transition-colors duration-300 rounded-lg hover:bg-gray-100" role="menuitem">
+                <div class="flex items-center">
+                  <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
+                  Edit Organization
+                </div>
+              </RouterLink>
+              <RouterLink :to="{ name: 'MyOrganizations' }" class="block px-4 py-2 text-gray-800 transition-colors duration-300 rounded-lg hover:bg-gray-100" role="menuitem">
+                <div class="flex items-center">
+                  <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5C4.46957 7 3.96086 7.21071 3.58579 7.58579C3.21071 7.96086 3 8.46957 3 9V18C3 18.5304 3.21071 19.0391 3.58579 19.4142C3.96086 19.7893 4.46957 20 5 20H14C14.5304 20 15.0391 19.7893 15.4142 19.4142C15.7893 19.0391 16 18.5304 16 18V15M16 5L21 10M21 10L16 15M21 10H9" />
                   </svg>
                   Switch Organization
                 </div>
@@ -115,7 +131,7 @@
                 Logout
               </div>
             </button>
-            </template>
+          </template>
           </div>
         </transition>
       </div>
@@ -146,6 +162,7 @@ const router = useRouter()
 const user = computed(() => authStore.user)
 const isOrganizationMode = computed(() => organizationStore.isOrganizationMode)
 const organizationName = computed(() => organizationStore.organizationName)
+const organizationId = computed(() => organizationStore.organizationId)
 const activeOrganization = computed(() => organizationStore.activeOrganization)
 
 onMounted(() => {

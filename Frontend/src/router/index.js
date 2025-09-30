@@ -20,6 +20,18 @@ const routes = [
         meta: { requiresAuth: true }
     },
     {
+        path: '/organization/:id',
+        name: 'OrganizationProfile',
+        component: () => import('@/views/Organization/Profile.vue'),
+        meta: { requiresAuth: true }
+    },
+    {
+        path: '/organization/:id/edit',
+        name: 'OrganizationEdit',
+        component: () => import('@/views/Organization/Edit.vue'),
+        meta: { requiresAuth: true }
+    },
+    {
         path: '/profile',
         name: 'Profile',
         component: () => import('@/views/Profile.vue'),

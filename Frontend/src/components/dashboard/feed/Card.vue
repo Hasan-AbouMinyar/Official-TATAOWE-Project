@@ -117,9 +117,9 @@
           </div>
         </div>
         
-        <!-- Apply Button -->
+        <!-- Apply Button (Hidden in Organization Mode) -->
         <button 
-          v-if="!registrationEnded"
+          v-if="!registrationEnded && !isOrganizationMode"
           @click="handleApply"
           :disabled="applying || hasApplied"
           :class="{
@@ -131,15 +131,18 @@
         >
           {{ applying ? 'Applying...' : hasApplied ? 'Already Applied' : 'Apply Now' }}
         </button>
-        <span v-else class="px-3 py-1.5 text-xs font-medium text-red-600 bg-red-50 rounded-md">
+        <span v-else-if="registrationEnded && !isOrganizationMode" class="px-3 py-1.5 text-xs font-medium text-red-600 bg-red-50 rounded-md">
           Registration Closed
+        </span>
+        <span v-else-if="isOrganizationMode" class="px-3 py-1.5 text-xs font-medium text-purple-600 bg-purple-50 rounded-md">
+          Organization Event
         </span>
       </div>
 
       <!-- Reviews Section -->
       <div v-if="showReviews" class="border-t border-gray-100 pt-4 space-y-4">
-        <!-- Add Review Form (if authenticated) -->
-        <div v-if="isAuthenticated" class="bg-gray-50 rounded-lg p-4">
+        <!-- Add Review Form (if authenticated and NOT in organization mode) -->
+        <div v-if="isAuthenticated && !isOrganizationMode" class="bg-gray-50 rounded-lg p-4">
           <h5 class="text-sm font-semibold text-gray-900 mb-3">Leave a Review</h5>
           <div class="space-y-3">
             <!-- Star Rating -->
@@ -269,6 +272,7 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useAuthStore } from '@/stores/auth'
+import { useOrganizationStore } from '@/stores/organization'
 import api from '@/api'
 
 const props = defineProps({
@@ -279,7 +283,10 @@ const props = defineProps({
 })
 
 const authStore = useAuthStore()
+const organizationStore = useOrganizationStore()
+
 const isAuthenticated = computed(() => authStore.isAuthenticated)
+const isOrganizationMode = computed(() => organizationStore.isOrganizationMode)
 
 const showReviews = ref(false)
 const reviews = ref([])

@@ -52,6 +52,11 @@ class OrganizationController extends Controller
 
     public function show(Organization $organization)
     {
+        // Add full logo URL if exists
+        if ($organization->logo) {
+            $organization->logo_url = asset('storage/' . $organization->logo);
+        }
+        
         return $organization;
     }
 
