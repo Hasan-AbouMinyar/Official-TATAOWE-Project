@@ -39,4 +39,19 @@ class Event extends Model
     {
         return $this->belongsToMany(User::class, 'applications')->withTimestamps()->withPivot('status');
     }
+
+    public function reviews()
+    {
+        return $this->hasMany(EventReview::class);
+    }
+
+    public function averageRating()
+    {
+        return $this->reviews()->avg('rating');
+    }
+
+    public function totalReviews()
+    {
+        return $this->reviews()->count();
+    }
 }

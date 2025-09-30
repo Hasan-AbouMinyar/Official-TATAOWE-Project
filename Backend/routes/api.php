@@ -25,6 +25,87 @@ Route::get('organizations/{organization}/events', [OrganizationController::class
 Route::get('events/{event}/applications', [EventController::class, 'applications']);
 Route::get('events/{event}/users', [EventController::class, 'users']);
 
+// Event reviews endpoints
+Route::get('events/{event}/reviews', function(\App\Models\Event $event) {
+    return $event->reviews()->with('user:id,name,photo')->latest()->get();
+});
+
+Route::middleware('auth:sanctum')->post('events/{event}/reviews', function(Request $request, \App\Models\Event $event) {
+    $validated = $request->validate([
+        'comment' => 'nullable|string|max:1000',
+        'rating' => 'required|integer|min:1|max:5',
+    ]);
+
+    // Check if user already reviewed this event
+    $existingReview = $event->reviews()->where('user_id', $request->user()->id)->first();
+    
+    if ($existingReview) {
+        $existingReview->update($validated);
+        return response()->json([
+            'message' => 'Review updated successfully',
+            'review' => $existingReview->load('user:id,name,photo')
+        ]);
+    }
+
+    $review = $event->reviews()->create([
+        'user_id' => $request->user()->id,
+        'comment' => $validated['comment'],
+        'rating' => $validated['rating'],
+    ]);
+
+    return response()->json([
+        'message' => 'Review added successfully',
+        'review' => $review->load('user:id,name,photo')
+    ], 201);
+});
+
+// Apply to event endpoint
+Route::middleware('auth:sanctum')->post('events/{event}/apply', function(Request $request, \App\Models\Event $event) {
+    $user = $request->user();
+    
+    // Check if registration period ended
+    if (now()->isAfter($event->end_time)) {
+        return response()->json([
+            'message' => 'Registration period has ended'
+        ], 422);
+    }
+
+    // Check if user already applied
+    $existingApplication = \App\Models\Application::where('user_id', $user->id)
+        ->where('event_id', $event->id)
+        ->first();
+    
+    if ($existingApplication) {
+        return response()->json([
+            'message' => 'You have already applied to this event',
+            'application' => $existingApplication
+        ], 422);
+    }
+
+    $application = \App\Models\Application::create([
+        'user_id' => $user->id,
+        'event_id' => $event->id,
+        'status' => 'pending',
+    ]);
+
+    return response()->json([
+        'message' => 'Application submitted successfully',
+        'application' => $application
+    ], 201);
+});
+
+// Check if user applied to event
+Route::middleware('auth:sanctum')->get('events/{event}/check-application', function(Request $request, \App\Models\Event $event) {
+    $application = \App\Models\Application::where('user_id', $request->user()->id)
+        ->where('event_id', $event->id)
+        ->first();
+    
+    return response()->json([
+        'applied' => !!$application,
+        'application' => $application
+    ]);
+});
+
 Route::post('/login', function(Request $request) {
     $credentials = $request->only('email', 'password');
 

@@ -39,5 +39,20 @@ export default {
   // Get event users (volunteers)
   getUsers(id) {
     return apiClient.get(`/events/${id}/users`)
+  },
+
+  // Get event reviews
+  getReviews(id) {
+    return apiClient.get(`/events/${id}/reviews`)
+  },
+
+  // Add or update review
+  addReview(id, reviewData) {
+    return apiClient.post(`/events/${id}/reviews`, reviewData)
+  },
+
+  // Check if user applied to event
+  checkApplication(id) {
+    return apiClient.get(`/events/${id}/check-application`)
   }
 }

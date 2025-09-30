@@ -10,7 +10,25 @@ class EventController extends Controller
 {
     public function index()
     {
-        return Event::with('organization')->paginate();
+        $events = Event::with(['organization', 'reviews' => function($query) {
+            $query->select('event_id', 'rating');
+        }])
+        ->withCount('applications')
+        ->get()
+        ->map(function($event) {
+            $event->average_rating = round($event->reviews->avg('rating'), 1);
+            $event->total_reviews = $event->reviews->count();
+            unset($event->reviews);
+            return $event;
+        });
+
+        return response()->json([
+            'data' => $events,
+            'current_page' => 1,
+            'per_page' => $events->count(),
+            'total' => $events->count(),
+            'last_page' => 1
+        ]);
     }
 
     public function store(Request $request)
@@ -31,7 +49,12 @@ class EventController extends Controller
 
     public function show(Event $event)
     {
-        return $event->load('organization');
+        $event->load(['organization', 'reviews.user:id,name,photo']);
+        $event->average_rating = round($event->reviews->avg('rating'), 1);
+        $event->total_reviews = $event->reviews->count();
+        $event->applications_count = $event->applications()->count();
+        
+        return $event;
     }
 
     public function update(Request $request, Event $event)
