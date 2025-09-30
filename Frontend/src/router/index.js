@@ -38,6 +38,12 @@ const routes = [
         meta: { requiresAuth: true }
     },
     {
+        path: '/events/:id',
+        name: 'EventDetails',
+        component: () => import('@/views/Event/Details.vue'),
+        meta: { requiresAuth: true }
+    },
+    {
         path: '/events/:id/edit',
         name: 'EditEvent',
         component: () => import('@/views/Event/Edit.vue'),
@@ -62,9 +68,27 @@ const routes = [
         meta: { requiresAuth: true }
     },
     {
+        path: '/users/:id',
+        name: 'UserProfile',
+        component: () => import('@/views/User/UserProfile.vue'),
+        meta: { requiresAuth: true }
+    },
+    {
         path: '/my-applications',
         name: 'MyApplications',
         component: () => import('@/views/MyApplications.vue'),
+        meta: { requiresAuth: true }
+    },
+    {
+        path: '/notifications',
+        name: 'Notifications',
+        component: () => import('@/views/Notifications.vue'),
+        meta: { requiresAuth: true }
+    },
+    {
+        path: '/search',
+        name: 'SearchResults',
+        component: () => import('@/views/SearchResults.vue'),
         meta: { requiresAuth: true }
     },
     {
