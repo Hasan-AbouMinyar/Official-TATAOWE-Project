@@ -5,8 +5,8 @@
       <div class="mb-8">
         <div class="flex items-center justify-between mb-4">
           <div>
-            <h1 class="text-4xl font-bold text-gray-900 mb-2">منظماتي</h1>
-            <p class="text-gray-600">إدارة وعرض جميع المنظمات التي أنشأتها</p>
+            <h1 class="text-4xl font-bold text-gray-900 mb-2">My Organizations</h1>
+            <p class="text-gray-600">Manage and view all your organizations</p>
           </div>
           <router-link 
             :to="{ name: 'OrganizationCreate' }" 
@@ -15,7 +15,7 @@
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
               <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
             </svg>
-            إنشاء منظمة جديدة
+            Create New Organization
           </router-link>
         </div>
 
@@ -24,7 +24,7 @@
           <div class="bg-white rounded-xl shadow-md p-6 border-l-4 border-blue-500">
             <div class="flex items-center justify-between">
               <div>
-                <p class="text-gray-600 text-sm font-medium">إجمالي المنظمات</p>
+                <p class="text-gray-600 text-sm font-medium">Total Organizations</p>
                 <p class="text-3xl font-bold text-gray-900 mt-1">{{ organizations.length }}</p>
               </div>
               <div class="bg-blue-100 rounded-full p-3">
@@ -38,7 +38,7 @@
           <div class="bg-white rounded-xl shadow-md p-6 border-l-4 border-green-500">
             <div class="flex items-center justify-between">
               <div>
-                <p class="text-gray-600 text-sm font-medium">المنظمات النشطة</p>
+                <p class="text-gray-600 text-sm font-medium">Active Organizations</p>
                 <p class="text-3xl font-bold text-gray-900 mt-1">{{ organizations.length }}</p>
               </div>
               <div class="bg-green-100 rounded-full p-3">
@@ -52,7 +52,7 @@
           <div class="bg-white rounded-xl shadow-md p-6 border-l-4 border-purple-500">
             <div class="flex items-center justify-between">
               <div>
-                <p class="text-gray-600 text-sm font-medium">آخر تحديث</p>
+                <p class="text-gray-600 text-sm font-medium">Last Update</p>
                 <p class="text-lg font-semibold text-gray-900 mt-1">{{ getLastUpdateTime() }}</p>
               </div>
               <div class="bg-purple-100 rounded-full p-3">
@@ -69,7 +69,7 @@
       <div v-if="loading" class="flex justify-center items-center py-20">
         <div class="text-center">
           <div class="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-600 mx-auto mb-4"></div>
-          <p class="text-gray-600 text-lg">جاري تحميل المنظمات...</p>
+          <p class="text-gray-600 text-lg">Loading organizations...</p>
         </div>
       </div>
 
@@ -85,7 +85,7 @@
             <p class="text-red-800 font-medium">{{ error }}</p>
           </div>
           <button @click="loadOrganizations" class="ml-3 text-red-600 hover:text-red-800 font-medium underline">
-            إعادة المحاولة
+            Retry
           </button>
         </div>
       </div>
@@ -98,8 +98,8 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
             </svg>
           </div>
-          <h3 class="text-2xl font-bold text-gray-900 mb-3">لا توجد منظمات بعد</h3>
-          <p class="text-gray-600 mb-8">ابدأ بإنشاء منظمتك الأولى وانطلق في رحلتك!</p>
+          <h3 class="text-2xl font-bold text-gray-900 mb-3">No Organizations Yet</h3>
+          <p class="text-gray-600 mb-8">Get started by creating your first organization!</p>
           <router-link 
             :to="{ name: 'OrganizationCreate' }" 
             class="inline-flex items-center px-8 py-4 border border-transparent text-lg font-medium rounded-lg shadow-lg text-white bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 transform transition-all duration-200 hover:scale-105"
@@ -107,7 +107,7 @@
             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2" viewBox="0 0 20 20" fill="currentColor">
               <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
             </svg>
-            إنشاء منظمة جديدة
+            Create New Organization
           </router-link>
         </div>
       </div>
@@ -146,17 +146,22 @@ async function loadOrganizations() {
     
     const userId = authStore.user?.id
     if (!userId) {
-      error.value = 'المستخدم غير مصادق عليه'
+      error.value = 'User not authenticated'
       return
     }
     
     // Fetch user's organizations
     const response = await api.organizations.getUserOrganizations(userId)
-    organizations.value = response.data
+    
+    // Use logo_url from backend or fallback to constructing URL
+    organizations.value = response.data.map(org => ({
+      ...org,
+      logo: org.logo_url || (org.logo ? `http://localhost:8000/storage/${org.logo}` : null)
+    }))
     
   } catch (err) {
     console.error('Error loading organizations:', err)
-    error.value = err.response?.data?.message || 'فشل تحميل المنظمات. يرجى المحاولة مرة أخرى.'
+    error.value = err.response?.data?.message || 'Failed to load organizations. Please try again.'
   } finally {
     loading.value = false
   }
@@ -164,7 +169,7 @@ async function loadOrganizations() {
 
 // Handle delete organization
 async function handleDelete(org) {
-  if (!confirm(`هل أنت متأكد من حذف منظمة "${org.name}"؟`)) {
+  if (!confirm(`Are you sure you want to delete "${org.name}"?`)) {
     return
   }
 
@@ -173,22 +178,24 @@ async function handleDelete(org) {
     organizations.value = organizations.value.filter(o => o.id !== org.id)
     
     // Show success message (you can use a toast notification library)
-    alert('تم حذف المنظمة بنجاح')
+    alert('Organization deleted successfully')
   } catch (err) {
     console.error('Error deleting organization:', err)
-    alert(err.response?.data?.message || 'فشل حذف المنظمة. يرجى المحاولة مرة أخرى.')
+    alert(err.response?.data?.message || 'Failed to delete organization. Please try again.')
   }
 }
 
 // Get last update time
 function getLastUpdateTime() {
-  if (organizations.value.length === 0) return 'لا يوجد'
+  if (organizations.value.length === 0) return 'N/A'
   
   const now = new Date()
   const hours = now.getHours()
   const minutes = now.getMinutes()
+  const ampm = hours >= 12 ? 'PM' : 'AM'
+  const displayHours = hours % 12 || 12
   
-  return `${hours}:${minutes < 10 ? '0' + minutes : minutes}`
+  return `${displayHours}:${minutes < 10 ? '0' + minutes : minutes} ${ampm}`
 }
 
 // Load organizations on component mount

@@ -64,7 +64,17 @@ class UserController extends Controller
 
     public function organizations(User $user)
     {
-        return $user->organizations;
+        $organizations = $user->organizations;
+        
+        // Add full URL for logo
+        $organizations->transform(function($org) {
+            if ($org->logo) {
+                $org->logo_url = asset('storage/' . $org->logo);
+            }
+            return $org;
+        });
+        
+        return $organizations;
     }
 
     public function applications(User $user)
