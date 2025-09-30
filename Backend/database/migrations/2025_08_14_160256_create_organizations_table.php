@@ -18,9 +18,11 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->string('phone')->nullable();
             $table->string('address')->nullable();
+            $table->string('location')->nullable();
             $table->string('website')->nullable();
             $table->string('field')->nullable();
             $table->string('photo')->nullable();
+            $table->string('logo')->nullable();
             $table->text('description')->nullable();
             $table->timestamps();
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');

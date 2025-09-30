@@ -12,8 +12,13 @@ export default {
   },
 
   // Create organization
-  create(organizationData) {
-    return apiClient.post('/organizations', organizationData)
+  create(organizationData, config = {}) {
+    return apiClient.post('/organizations', organizationData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+        ...config.headers
+      }
+    })
   },
 
   // Update organization
@@ -29,5 +34,10 @@ export default {
   // Get organization events
   getEvents(id) {
     return apiClient.get(`/organizations/${id}/events`)
+  },
+
+  // Get user's organizations
+  getUserOrganizations(userId) {
+    return apiClient.get(`/users/${userId}/organizations`)
   }
 }

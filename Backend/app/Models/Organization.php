@@ -15,9 +15,11 @@ class Organization extends Model
         'email',
         'phone',
         'address',
+        'location',
         'website',
         'field',
         'photo',
+        'logo',
         'description',
     ];
 
