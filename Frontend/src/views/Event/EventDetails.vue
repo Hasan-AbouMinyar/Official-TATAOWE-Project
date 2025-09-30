@@ -65,22 +65,14 @@
               </div>
 
               <!-- Actions -->
-              <div class="flex gap-3">
+              <div v-if="!hasApplied" class="flex gap-3">
                 <button
-                  v-if="!hasApplied"
                   @click="applyToEvent"
                   :disabled="applying"
                   class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
                 >
                   {{ applying ? 'Applying...' : 'Apply Now' }}
                 </button>
-
-                <span
-                  v-if="hasApplied"
-                  class="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg"
-                >
-                  Already Applied
-                </span>
               </div>
             </div>
 
