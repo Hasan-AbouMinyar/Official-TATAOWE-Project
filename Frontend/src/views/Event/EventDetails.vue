@@ -235,6 +235,14 @@ async function loadEvent() {
       headers: { Authorization: `Bearer ${token}` }
     })
     event.value = response.data
+    console.log('Event loaded:', {
+      eventId: event.value.id,
+      eventName: event.value.name,
+      organization: event.value.organization,
+      organizationUserId: event.value.organization?.user_id,
+      currentUser: authStore.user,
+      currentUserId: authStore.user?.id
+    })
   } catch (err) {
     console.error('Error loading event:', err)
     error.value = err.response?.data?.message || 'Failed to load event'
