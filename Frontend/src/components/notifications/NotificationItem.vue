@@ -64,18 +64,9 @@
 
     <!-- Content -->
     <div class="flex-1 min-w-0">
-      <div class="flex items-center gap-2">
-        <p class="text-sm font-medium text-gray-900">
-          {{ notification.data.title }}
-        </p>
-        <span 
-          v-if="notificationCategory"
-          class="inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full"
-          :class="notificationCategory.class"
-        >
-          {{ notificationCategory.label }}
-        </span>
-      </div>
+      <p class="text-sm font-medium text-gray-900">
+        {{ notification.data.title }}
+      </p>
       <p class="text-sm text-gray-600 mt-1">
         {{ notification.data.message }}
       </p>
@@ -134,38 +125,6 @@ const iconColorClass = computed(() => {
     gray: 'bg-gray-500'
   }
   return colors[color.value] || colors.blue
-})
-
-const notificationCategory = computed(() => {
-  const type = props.notification.data.type
-  
-  // Volunteer notifications
-  const volunteerTypes = ['application_status', 'application_submitted', 'event_reminder']
-  if (volunteerTypes.includes(type)) {
-    return {
-      label: 'Volunteer',
-      class: 'bg-blue-100 text-blue-700'
-    }
-  }
-  
-  // Organization notifications
-  const organizationTypes = ['new_application', 'new_review', 'event_created']
-  if (organizationTypes.includes(type)) {
-    return {
-      label: 'Organization',
-      class: 'bg-purple-100 text-purple-700'
-    }
-  }
-  
-  // Event updates can be both
-  if (type === 'event_updated') {
-    return {
-      label: 'Event',
-      class: 'bg-green-100 text-green-700'
-    }
-  }
-  
-  return null
 })
 
 function formatDate(dateString) {
