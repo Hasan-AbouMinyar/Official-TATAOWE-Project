@@ -22,10 +22,38 @@
         <p class="mt-0.5 text-xs text-gray-500">{{ formatDate(event.created_at) }} · Public</p>
       </div>
       
-      <button class="text-gray-400 hover:text-gray-600 p-2 rounded-full hover:bg-gray-100">
+      <button 
+        @click.stop="toggleMenu"
+        class="text-gray-400 hover:text-gray-600 p-2 rounded-full hover:bg-gray-100 relative"
+      >
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
           <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 12.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 18.75a.75.75 0 110-1.5.75.75 0 010 1.5z" />
         </svg>
+        
+        <!-- Dropdown Menu -->
+        <transition
+          enter-active-class="transition ease-out duration-100"
+          enter-from-class="transform opacity-0 scale-95"
+          enter-to-class="transform opacity-100 scale-100"
+          leave-active-class="transition ease-in duration-75"
+          leave-from-class="transform opacity-100 scale-100"
+          leave-to-class="transform opacity-0 scale-95"
+        >
+          <div 
+            v-if="showMenu && isEventOwnedByCurrentOrg"
+            class="absolute right-0 top-full mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-10 overflow-hidden"
+          >
+            <button
+              @click.stop="editEvent"
+              class="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-3 transition-colors"
+            >
+              <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+              </svg>
+              Edit Event
+            </button>
+          </div>
+        </transition>
       </button>
     </header>
     
@@ -109,7 +137,7 @@
             </svg>
             <span>{{ event.total_reviews || 0 }} Reviews</span>
           </button>
-          <div class="flex items-center gap-1.5 px-2.5 py-1.5 text-gray-500">
+          <div v-if="isEventOwnedByCurrentOrg" class="flex items-center gap-1.5 px-2.5 py-1.5 text-gray-500">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
             </svg>
@@ -134,9 +162,18 @@
         <span v-else-if="registrationEnded && !isOrganizationMode" class="px-3 py-1.5 text-xs font-medium text-red-600 bg-red-50 rounded-md">
           Registration Closed
         </span>
-        <span v-else-if="isOrganizationMode" class="px-3 py-1.5 text-xs font-medium text-purple-600 bg-purple-50 rounded-md">
-          Organization Event
-        </span>
+        
+        <!-- View Applications Button (Only in Organization Mode and for owned events) -->
+        <button 
+          v-if="isOrganizationMode && isEventOwnedByCurrentOrg"
+          @click="viewApplications"
+          class="px-3 py-1.5 text-xs font-medium text-purple-600 bg-purple-50 hover:bg-purple-100 rounded-md transition-colors flex items-center gap-1.5"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+          View Applications ({{ event.applications_count || 0 }})
+        </button>
       </div>
 
       <!-- Reviews Section -->
@@ -273,6 +310,7 @@
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useOrganizationStore } from '@/stores/organization'
+import { useRouter } from 'vue-router'
 import api from '@/api'
 
 const props = defineProps({
@@ -284,9 +322,15 @@ const props = defineProps({
 
 const authStore = useAuthStore()
 const organizationStore = useOrganizationStore()
+const router = useRouter()
 
 const isAuthenticated = computed(() => authStore.isAuthenticated)
 const isOrganizationMode = computed(() => organizationStore.isOrganizationMode)
+
+const isEventOwnedByCurrentOrg = computed(() => {
+  if (!isOrganizationMode.value || !organizationStore.organizationId) return false
+  return props.event.organization_id === organizationStore.organizationId
+})
 
 const showReviews = ref(false)
 const reviews = ref([])
@@ -294,6 +338,7 @@ const applying = ref(false)
 const hasApplied = ref(false)
 const submittingReview = ref(false)
 const activeReviewMenu = ref(null)
+const showMenu = ref(false)
 
 const newReview = ref({
   rating: 0,
@@ -380,6 +425,10 @@ function toggleReviewMenu(reviewId) {
   activeReviewMenu.value = activeReviewMenu.value === reviewId ? null : reviewId
 }
 
+function toggleMenu() {
+  showMenu.value = !showMenu.value
+}
+
 async function handleDeleteReview(review) {
   // Close the menu
   activeReviewMenu.value = null
@@ -456,6 +505,15 @@ function getSkillColor(index) {
   return colors[index % colors.length]
 }
 
+function viewApplications() {
+  router.push({ name: 'EventApplications', params: { id: props.event.id } })
+}
+
+function editEvent() {
+  showMenu.value = false
+  router.push({ name: 'EditEvent', params: { id: props.event.id } })
+}
+
 onMounted(() => {
   checkIfApplied()
   if (showReviews.value) {
@@ -472,6 +530,7 @@ onUnmounted(() => {
 
 function closeReviewMenu() {
   activeReviewMenu.value = null
+  showMenu.value = false
 }
 
 watch(showReviews, (newValue) => {

@@ -25,6 +25,26 @@ Route::get('organizations/{organization}/events', [OrganizationController::class
 Route::get('events/{event}/applications', [EventController::class, 'applications']);
 Route::get('events/{event}/users', [EventController::class, 'users']);
 
+// Update application status (for organization owners)
+Route::middleware('auth:sanctum')->patch('applications/{application}/status', function(Request $request, \App\Models\Application $application) {
+    $validated = $request->validate([
+        'status' => 'required|in:pending,accepted,rejected',
+    ]);
+
+    // Check if the authenticated user owns the organization that owns this event
+    $user = $request->user();
+    if (!$user || !$application->event || !$application->event->organization || $application->event->organization->user_id !== $user->id) {
+        return response()->json(['message' => 'Unauthorized to update application status'], 403);
+    }
+
+    $application->update(['status' => $validated['status']]);
+
+    return response()->json([
+        'message' => 'Application status updated successfully',
+        'application' => $application->load('user', 'event')
+    ]);
+});
+
 // Event reviews endpoints
 Route::get('events/{event}/reviews', function(\App\Models\Event $event) {
     return $event->reviews()->with('user:id,name,photo')->latest()->get();

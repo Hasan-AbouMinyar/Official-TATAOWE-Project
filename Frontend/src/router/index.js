@@ -38,6 +38,24 @@ const routes = [
         meta: { requiresAuth: true }
     },
     {
+        path: '/events/:id/edit',
+        name: 'EditEvent',
+        component: () => import('@/views/Event/Edit.vue'),
+        meta: { requiresAuth: true }
+    },
+    {
+        path: '/events/:id/applications',
+        name: 'EventApplications',
+        component: () => import('@/views/Event/Applications.vue'),
+        meta: { requiresAuth: true }
+    },
+    {
+        path: '/organization/applications',
+        name: 'OrganizationApplications',
+        component: () => import('@/views/Organization/AllApplications.vue'),
+        meta: { requiresAuth: true }
+    },
+    {
         path: '/profile',
         name: 'Profile',
         component: () => import('@/views/Profile.vue'),

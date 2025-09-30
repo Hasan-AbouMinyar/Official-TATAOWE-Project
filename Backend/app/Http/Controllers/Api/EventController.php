@@ -139,7 +139,34 @@ class EventController extends Controller
 
     public function applications(Event $event)
     {
-        return $event->applications;
+        // Check if the authenticated user belongs to the organization that owns this event
+        $user = auth('sanctum')->user();
+        if (!$user || !$event->organization || $event->organization->user_id !== $user->id) {
+            return response()->json(['message' => 'Unauthorized to view applications for this event'], 403);
+        }
+
+        return $event->applications()
+            ->with(['user' => function($query) {
+                $query->select('id', 'name', 'email', 'phoneNumber', 'username', 'photo');
+            }])
+            ->latest()
+            ->get()
+            ->map(function($application) {
+                return [
+                    'id' => $application->id,
+                    'status' => $application->status,
+                    'created_at' => $application->created_at,
+                    'updated_at' => $application->updated_at,
+                    'user' => [
+                        'id' => $application->user->id,
+                        'name' => $application->user->name,
+                        'email' => $application->user->email,
+                        'phone' => $application->user->phoneNumber,
+                        'username' => $application->user->username,
+                        'photo' => $application->user->photo ? asset('storage/' . $application->user->photo) : null,
+                    ]
+                ];
+            });
     }
 
     public function users(Event $event)
