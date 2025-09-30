@@ -19,16 +19,32 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, onMounted, onUnmounted } from 'vue'
 import { useRoute } from 'vue-router'
+import { useAuthStore } from './stores/auth'
+import { useNotificationStore } from './stores/notification'
 import Navigation from './components/layout/Navigation.vue'
 import Sidebar from './components/layout/Sidebar.vue'
 
 const route = useRoute()
+const authStore = useAuthStore()
+const notificationStore = useNotificationStore()
 
 // Check if current route is an auth page
 const isAuthPage = computed(() => {
     const authRoutes = ['Login', 'Register', 'ForgotPassword', 'ResetPassword']
     return authRoutes.includes(route.name)
+})
+
+// Start polling for notifications when component mounts
+onMounted(() => {
+    if (authStore.isAuthenticated) {
+        notificationStore.startPolling()
+    }
+})
+
+// Stop polling when component unmounts
+onUnmounted(() => {
+    notificationStore.stopPolling()
 })
 </script>

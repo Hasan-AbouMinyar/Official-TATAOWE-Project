@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Event;
+use App\Notifications\EventCreated;
+use App\Notifications\EventUpdated;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -65,6 +67,11 @@ class EventController extends Controller
 
         $event = Event::create($data);
         
+        // Send notification to organization owner
+        if ($event->organization && $event->organization->user) {
+            $event->organization->user->notify(new EventCreated($event));
+        }
+        
         // Return event with full photo URL
         if ($event->photo) {
             $event->photo = asset('storage/' . $event->photo);
@@ -117,6 +124,18 @@ class EventController extends Controller
         }
 
         $event->update($data);
+        
+        // Send notification to organization owner about update
+        if ($event->organization && $event->organization->user) {
+            $event->organization->user->notify(new EventUpdated($event));
+        }
+        
+        // Notify all applicants about event update
+        $event->applications()->with('user')->get()->each(function($application) use ($event) {
+            if ($application->user) {
+                $application->user->notify(new EventUpdated($event));
+            }
+        });
         
         // Return event with full photo URL
         if ($event->photo) {

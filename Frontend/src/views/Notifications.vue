@@ -27,10 +27,10 @@
     </div>
 
     <!-- Filter Tabs -->
-    <div class="flex gap-4 border-b mb-6">
+    <div class="flex gap-4 border-b mb-6 overflow-x-auto">
       <button
         @click="activeTab = 'all'"
-        class="px-4 py-2 font-medium transition-colors relative"
+        class="px-4 py-2 font-medium transition-colors relative whitespace-nowrap"
         :class="activeTab === 'all' ? 'text-blue-600' : 'text-gray-600 hover:text-gray-900'"
       >
         All
@@ -38,7 +38,7 @@
       </button>
       <button
         @click="activeTab = 'unread'"
-        class="px-4 py-2 font-medium transition-colors relative"
+        class="px-4 py-2 font-medium transition-colors relative whitespace-nowrap"
         :class="activeTab === 'unread' ? 'text-blue-600' : 'text-gray-600 hover:text-gray-900'"
       >
         Unread
@@ -46,6 +46,32 @@
           {{ unreadCount }}
         </span>
         <span v-if="activeTab === 'unread'" class="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600"></span>
+      </button>
+      <button
+        @click="activeTab = 'volunteer'"
+        class="px-4 py-2 font-medium transition-colors relative whitespace-nowrap"
+        :class="activeTab === 'volunteer' ? 'text-blue-600' : 'text-gray-600 hover:text-gray-900'"
+      >
+        <span class="flex items-center gap-1">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+          </svg>
+          My Applications
+        </span>
+        <span v-if="activeTab === 'volunteer'" class="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600"></span>
+      </button>
+      <button
+        @click="activeTab = 'organization'"
+        class="px-4 py-2 font-medium transition-colors relative whitespace-nowrap"
+        :class="activeTab === 'organization' ? 'text-blue-600' : 'text-gray-600 hover:text-gray-900'"
+      >
+        <span class="flex items-center gap-1">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+          </svg>
+          My Events
+        </span>
+        <span v-if="activeTab === 'organization'" class="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600"></span>
       </button>
     </div>
 
@@ -64,7 +90,7 @@
       </svg>
       <h3 class="text-xl font-semibold text-gray-700 mb-2">No notifications</h3>
       <p class="text-gray-500">
-        {{ activeTab === 'unread' ? 'You have no unread notifications' : 'You have no notifications yet' }}
+        {{ getEmptyStateMessage() }}
       </p>
     </div>
 
@@ -132,10 +158,35 @@ const currentPage = computed(() => notificationStore.currentPage)
 const lastPage = computed(() => notificationStore.lastPage)
 
 const displayedNotifications = computed(() => {
+  let filtered = notifications.value
+
+  // Filter by read status
   if (activeTab.value === 'unread') {
-    return notifications.value.filter(n => !n.read_at)
+    filtered = filtered.filter(n => !n.read_at)
   }
-  return notifications.value
+  
+  // Filter by notification type
+  if (activeTab.value === 'volunteer') {
+    // Notifications for volunteers (users who apply to events)
+    const volunteerTypes = [
+      'application_status',      // When their application is accepted/rejected
+      'application_submitted',   // Confirmation of submission
+      'event_updated',          // Updates to events they applied to
+      'event_reminder'          // Reminders for events they're attending
+    ]
+    filtered = filtered.filter(n => volunteerTypes.includes(n.data.type))
+  } else if (activeTab.value === 'organization') {
+    // Notifications for organizations (event creators)
+    const organizationTypes = [
+      'new_application',        // New applications received
+      'new_review',            // New reviews on their events
+      'event_created',         // Event creation confirmation
+      'event_updated'          // Event update confirmation (for their own events)
+    ]
+    filtered = filtered.filter(n => organizationTypes.includes(n.data.type))
+  }
+
+  return filtered
 })
 
 const paginationPages = computed(() => {
@@ -235,6 +286,19 @@ async function handleNotificationClick(notification) {
 
 async function handleDelete(notificationId) {
   await notificationStore.deleteNotification(notificationId)
+}
+
+function getEmptyStateMessage() {
+  switch (activeTab.value) {
+    case 'unread':
+      return 'You have no unread notifications'
+    case 'volunteer':
+      return 'No notifications about your applications yet'
+    case 'organization':
+      return 'No notifications about your events yet'
+    default:
+      return 'You have no notifications yet'
+  }
 }
 
 onMounted(() => {

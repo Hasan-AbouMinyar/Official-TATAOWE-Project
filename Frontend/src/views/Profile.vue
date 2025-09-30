@@ -17,26 +17,53 @@
           <div class="relative px-6 pb-6">
             <!-- Avatar -->
             <div class="flex justify-center -mt-16 mb-4">
-              <div class="relative">
-                <div class="w-32 h-32 rounded-full border-4 border-white bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center overflow-hidden shadow-lg">
+              <div class="relative group">
+                <div class="w-32 h-32 rounded-full border-4 border-white bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center overflow-hidden shadow-xl relative">
+                  <!-- Loading Overlay -->
+                  <div v-if="uploadingPhoto" class="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center z-10">
+                    <svg class="w-10 h-10 text-white animate-spin" fill="none" viewBox="0 0 24 24">
+                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                  </div>
+                  
+                  <!-- Photo -->
                   <img 
                     v-if="user?.photo" 
-                    :src="user.photo" 
+                    :src="getPhotoUrl(user.photo)" 
                     :alt="user.name"
                     class="w-full h-full object-cover"
+                    @error="handleImageError"
                   />
-                  <span v-else class="text-white font-bold text-4xl">
+                  
+                  <!-- Initials Fallback -->
+                  <span v-else class="text-white font-bold text-4xl select-none">
                     {{ getUserInitials(user?.name) }}
                   </span>
+                  
+                  <!-- Hover Overlay -->
+                  <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-300 flex items-center justify-center">
+                    <svg class="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                  </div>
                 </div>
+                
+                <!-- Change Photo Button -->
                 <button 
                   @click="triggerFileInput"
-                  class="absolute bottom-0 right-0 bg-blue-600 text-white p-2 rounded-full hover:bg-blue-700 transition-colors shadow-lg"
-                  title="Change photo"
+                  :disabled="uploadingPhoto"
+                  class="absolute bottom-0 right-0 bg-blue-600 text-white p-2.5 rounded-full hover:bg-blue-700 hover:scale-110 transition-all duration-200 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed ring-4 ring-white"
+                  :title="uploadingPhoto ? 'Uploading...' : 'Change photo'"
                 >
-                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg v-if="!uploadingPhoto" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                  <svg v-else class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
                 </button>
                 <input 
@@ -48,6 +75,13 @@
                 />
               </div>
             </div>
+            
+            <!-- Photo upload hint -->
+            <p class="text-xs text-center text-gray-500 mt-2">
+              Click the camera icon to change your profile photo
+              <br>
+              <span class="text-gray-400">Max size: 5MB • Format: JPEG, PNG, GIF, WebP</span>
+            </p>
 
             <!-- User Info -->
             <div class="text-center">
@@ -272,6 +306,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useAuthStore } from '../stores/auth'
+import { getPhotoUrl } from '../config/api'
 
 const authStore = useAuthStore()
 const user = computed(() => authStore.user)
@@ -281,6 +316,7 @@ const loading = ref(false)
 const successMessage = ref('')
 const errorMessage = ref('')
 const fileInput = ref(null)
+const uploadingPhoto = ref(false)
 
 const formData = ref({
   name: '',
@@ -310,6 +346,12 @@ function getUserInitials(name) {
     return (names[0][0] + names[1][0]).toUpperCase()
   }
   return name.substring(0, 2).toUpperCase()
+}
+
+function handleImageError(event) {
+  // Hide the broken image and show initials instead
+  event.target.style.display = 'none'
+  console.warn('Failed to load profile image:', event.target.src)
 }
 
 function startEditing() {
@@ -359,12 +401,64 @@ function triggerFileInput() {
   fileInput.value?.click()
 }
 
-function handleFileChange(event) {
+async function handleFileChange(event) {
   const file = event.target.files?.[0]
-  if (file) {
-    // Here you would typically upload the file
-    console.log('Selected file:', file)
-    // TODO: Implement file upload
+  if (!file) return
+  
+  // Validate file type
+  const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp']
+  if (!validTypes.includes(file.type)) {
+    errorMessage.value = 'Please select a valid image file (JPEG, PNG, GIF, or WebP)'
+    setTimeout(() => {
+      errorMessage.value = ''
+    }, 3000)
+    return
+  }
+  
+  // Validate file size (max 5MB)
+  const maxSize = 5 * 1024 * 1024 // 5MB in bytes
+  if (file.size > maxSize) {
+    errorMessage.value = 'Image size must be less than 5MB'
+    setTimeout(() => {
+      errorMessage.value = ''
+    }, 3000)
+    return
+  }
+  
+  try {
+    uploadingPhoto.value = true
+    errorMessage.value = ''
+    successMessage.value = ''
+    
+    // Preview image immediately
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      // Update user photo locally for immediate feedback
+      if (user.value) {
+        user.value.photo = e.target.result
+      }
+    }
+    reader.readAsDataURL(file)
+    
+    // Upload to server
+    await authStore.updatePhoto(file)
+    
+    successMessage.value = 'Profile photo updated successfully!'
+    setTimeout(() => {
+      successMessage.value = ''
+    }, 3000)
+  } catch (error) {
+    console.error('Photo upload failed:', error)
+    errorMessage.value = error.response?.data?.message || 'Failed to upload photo. Please try again.'
+    
+    // Reload user data to restore old photo on error
+    await authStore.fetchUser()
+  } finally {
+    uploadingPhoto.value = false
+    // Clear file input
+    if (fileInput.value) {
+      fileInput.value.value = ''
+    }
   }
 }
 </script>

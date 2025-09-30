@@ -2,17 +2,13 @@
   <article class="overflow-hidden rounded-2xl border border-gray-200 bg-white p-5 shadow-sm transition-shadow hover:shadow-lg">
     <header class="flex items-start gap-4">
       <!-- Organization Avatar -->
-      <div class="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center overflow-hidden">
-        <img 
-          v-if="event.organization?.logo" 
-          :src="event.organization.logo" 
-          :alt="event.organization.name"
-          class="w-full h-full object-cover"
-        />
-        <span v-else class="text-white font-bold text-lg">
-          {{ getInitials(event.organization?.name) }}
-        </span>
-      </div>
+      <Avatar 
+        :photo="event.organization?.logo"
+        :name="event.organization?.name"
+        size="lg"
+        :rounded="false"
+        shadow
+      />
       
       <div class="flex-1">
         <div class="flex items-center gap-2 flex-wrap">
@@ -232,17 +228,11 @@
             class="bg-white border border-gray-200 rounded-lg p-3"
           >
             <div class="flex items-start gap-3">
-              <div class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center overflow-hidden flex-shrink-0">
-                <img 
-                  v-if="review.user?.photo" 
-                  :src="review.user.photo" 
-                  :alt="review.user.name"
-                  class="w-full h-full object-cover"
-                />
-                <span v-else class="text-white font-bold text-xs">
-                  {{ getInitials(review.user?.name) }}
-                </span>
-              </div>
+              <Avatar 
+                :photo="review.user?.photo"
+                :name="review.user?.name"
+                size="sm"
+              />
               <div class="flex-1">
                 <div class="flex items-center justify-between">
                   <h6 class="text-sm font-semibold text-gray-900">{{ review.user?.name || 'Anonymous' }}</h6>
@@ -312,6 +302,8 @@ import { useAuthStore } from '@/stores/auth'
 import { useOrganizationStore } from '@/stores/organization'
 import { useRouter } from 'vue-router'
 import api from '@/api'
+import Avatar from '@/components/Avatar.vue'
+import { getPhotoUrl } from '@/config/api'
 
 const props = defineProps({
   event: {

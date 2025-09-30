@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Application;
+use App\Notifications\NewApplicationReceived;
+use App\Notifications\ApplicationStatusChanged;
 use Illuminate\Http\Request;
 
 class ApplicationController extends Controller
@@ -21,6 +23,12 @@ class ApplicationController extends Controller
             'status' => 'sometimes|in:pending,accepted,rejected',
         ]);
         $application = Application::create($data);
+        
+        // Send notification to event owner (organization owner)
+        if ($application->event && $application->event->organization && $application->event->organization->user) {
+            $application->event->organization->user->notify(new NewApplicationReceived($application));
+        }
+        
         return response()->json($application->load(['user','event']), 201);
     }
 
@@ -34,7 +42,20 @@ class ApplicationController extends Controller
         $data = $request->validate([
             'status' => 'sometimes|in:pending,accepted,rejected',
         ]);
+        
+        $oldStatus = $application->status;
         $application->update($data);
+        
+        // Send notification to applicant if status changed
+        if (isset($data['status']) && $oldStatus !== $data['status']) {
+            $application->user->notify(new ApplicationStatusChanged($application, $data['status']));
+            
+            // Send notification to organization owner as confirmation
+            if ($application->event && $application->event->organization && $application->event->organization->user) {
+                $application->event->organization->user->notify(new ApplicationStatusChanged($application, $data['status'], true));
+            }
+        }
+        
         return $application;
     }
 

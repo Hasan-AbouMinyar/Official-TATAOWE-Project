@@ -26,6 +26,15 @@ export default {
     return apiClient.put('/user/profile', userData)
   },
 
+  // Upload profile photo
+  uploadPhoto(formData) {
+    return apiClient.post('/user/photo', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    })
+  },
+
   // Change password
   changePassword(passwordData) {
     return apiClient.put('/user/password', passwordData)

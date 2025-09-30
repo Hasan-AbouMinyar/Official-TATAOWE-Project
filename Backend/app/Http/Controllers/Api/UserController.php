@@ -30,6 +30,9 @@ class UserController extends Controller
 
     public function show(User $user)
     {
+        // Load relationships
+        $user->load('skills');
+        
         return $user;
     }
 
@@ -64,7 +67,9 @@ class UserController extends Controller
 
     public function organizations(User $user)
     {
-        $organizations = $user->organizations;
+        $organizations = $user->organizations()
+            ->withCount('events')
+            ->get();
         
         // Add full URL for logo
         $organizations->transform(function($org) {

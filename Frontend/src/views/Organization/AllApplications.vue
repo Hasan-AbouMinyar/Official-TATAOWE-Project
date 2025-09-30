@@ -103,12 +103,13 @@
               </div>
               
               <!-- Event Photo -->
-              <div class="w-20 h-20 ml-4 rounded-lg overflow-hidden flex-shrink-0">
+              <div class="w-20 h-20 ml-4 rounded-lg overflow-hidden flex-shrink-0 shadow-md">
                 <img 
                   v-if="event.photo" 
-                  :src="event.photo" 
+                  :src="getPhotoUrl(event.photo)" 
                   :alt="event.name"
                   class="w-full h-full object-cover"
+                  @error="(e) => e.target.style.display = 'none'"
                 />
                 <div v-else class="w-full h-full bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center">
                   <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -188,6 +189,8 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useOrganizationStore } from '@/stores/organization'
 import api from '@/api'
+import Avatar from '@/components/Avatar.vue'
+import { getPhotoUrl } from '@/config/api'
 
 const router = useRouter()
 const organizationStore = useOrganizationStore()

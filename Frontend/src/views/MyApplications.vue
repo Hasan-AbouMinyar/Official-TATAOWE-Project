@@ -79,17 +79,13 @@
             <div class="flex-1">
               <div class="flex items-center gap-3 mb-3">
                 <!-- Organization Logo -->
-                <div class="w-12 h-12 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center flex-shrink-0 overflow-hidden">
-                  <img
-                    v-if="application.event?.organization?.logo"
-                    :src="application.event.organization.logo"
-                    :alt="application.event.organization?.name"
-                    class="w-full h-full object-cover"
-                  />
-                  <span v-else class="text-white font-bold text-sm">
-                    {{ getInitials(application.event?.organization?.name) }}
-                  </span>
-                </div>
+                <Avatar 
+                  :photo="application.event?.organization?.logo"
+                  :name="application.event?.organization?.name"
+                  size="lg"
+                  :rounded="false"
+                  shadow
+                />
 
                 <div class="flex-1">
                   <h3 class="text-lg font-semibold text-gray-900">
@@ -183,6 +179,8 @@
 import { ref, computed, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import api from '@/api'
+import Avatar from '@/components/Avatar.vue'
+import { getPhotoUrl } from '@/config/api'
 
 const authStore = useAuthStore()
 
@@ -241,15 +239,6 @@ function getStatusLabel(status) {
     rejected: 'Rejected'
   }
   return labels[status] || status
-}
-
-function getInitials(name) {
-  if (!name) return 'O'
-  const words = name.split(' ')
-  if (words.length >= 2) {
-    return (words[0][0] + words[1][0]).toUpperCase()
-  }
-  return name.substring(0, 2).toUpperCase()
 }
 
 function formatDate(dateString) {

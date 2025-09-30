@@ -1,22 +1,17 @@
 <template>
-  <header class="flex items-center justify-between h-20 px-6 bg-white border-b">
+  <header class="flex items-center justify-between h-20 px-6 bg-white border-b relative" :class="{ 'pt-8': isOrganizationMode }">
     <!-- Organization Mode Banner -->
-    <div v-if="isOrganizationMode" class="absolute top-0 left-0 right-0 bg-gradient-to-r from-blue-600 to-purple-600 text-white text-center py-1 text-sm font-medium flex items-center justify-center gap-2">
+    <div v-if="isOrganizationMode" class="absolute top-0 left-0 right-0 bg-gradient-to-r from-blue-600 to-purple-600 text-white text-center py-1.5 text-sm font-medium flex items-center justify-center gap-2 z-10">
       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
       </svg>
       <span>Organization Mode: {{ organizationName }}</span>
     </div>
     
-    <div class="relative flex items-center" :class="{ 'mt-6': isOrganizationMode }">
-      <span class="absolute inset-y-0 left-0 flex items-center pl-3">
-        <svg class="w-5 h-5 text-gray-400" viewBox="0 0 24 24" fill="none">
-          <path d="M21 21L15 15M17 10C17 13.866 13.866 17 10 17C6.13401 17 3 13.866 3 10C3 6.13401 6.13401 3 10 3C13.866 3 17 6.13401 17 10Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
-        </svg>
-      </span>
-      <input type="text" class="py-2.5 pl-10 pr-4 text-gray-700 placeholder-gray-400 bg-white border border-transparent border-gray-200 rounded-lg sm:w-auto w-36 focus:border-blue-400 focus:outline-none focus:ring focus:ring-blue-300 focus:ring-opacity-40" placeholder="Search" />
-    </div>
-    <div class="flex items-center" :class="{ 'mt-6': isOrganizationMode }">
+    <!-- Search Bar -->
+    <SearchBar />
+    
+    <div class="flex items-center z-20 gap-2">
       <div class="relative">
         <button class="transition-colors duration-300 rounded-lg sm:px-4 sm:py-2 focus:outline-none hover:bg-gray-100" @click="dropdownOpen = !dropdownOpen" :aria-expanded="dropdownOpen.toString()" aria-haspopup="menu">
           <span class="sr-only">User Menu</span>
@@ -29,20 +24,27 @@
                 {{ isOrganizationMode ? 'Organization Account' : (user?.email || '') }}
               </span>
             </div>
-            <div class="flex-shrink-0 w-10 h-10 overflow-hidden bg-gradient-to-br from-blue-500 to-purple-600 rounded-full md:mx-2 flex items-center justify-center">
+            <div class="flex-shrink-0 w-10 h-10 overflow-hidden bg-gradient-to-br from-blue-500 to-purple-600 rounded-full md:mx-2 flex items-center justify-center shadow-md ring-2 ring-gray-100">
+              <!-- Organization Logo -->
               <img 
                 v-if="isOrganizationMode && activeOrganization?.logo" 
-                :src="activeOrganization.logo" 
+                :src="getPhotoUrl(activeOrganization.logo)" 
                 :alt="organizationName" 
                 class="w-full h-full object-cover"
+                @error="handleImageError"
               />
+              
+              <!-- User Photo -->
               <img 
                 v-else-if="!isOrganizationMode && user?.photo" 
-                :src="user.photo" 
+                :src="getPhotoUrl(user.photo)" 
                 :alt="user.name" 
                 class="w-full h-full object-cover"
+                @error="handleImageError"
               />
-              <span v-else class="text-white font-semibold text-lg">
+              
+              <!-- Initials Fallback -->
+              <span v-else class="text-white font-semibold text-lg select-none">
                 {{ getUserInitials(isOrganizationMode ? organizationName : user?.name) }}
               </span>
             </div>
@@ -144,14 +146,9 @@
         </transition>
       </div>
       <div v-show="dropdownOpen" class="fixed inset-0 z-30" @click="dropdownOpen = false"></div>
-      <button class="relative p-2 mx-3 text-gray-400 transition-colors duration-300 rounded-full hover:bg-gray-100 hover:text-gray-600 focus:bg-gray-100">
-        <span class="sr-only">Notifications</span>
-        <span class="absolute top-0 right-0 w-2 h-2 mt-1 mr-2 bg-blue-700 rounded-full"></span>
-        <span class="absolute top-0 right-0 w-2 h-2 mt-1 mr-2 bg-blue-700 rounded-full animate-ping"></span>
-        <svg aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-6 h-6">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-        </svg>
-      </button>
+      
+      <!-- Notifications Dropdown Component -->
+      <NotificationDropdown />
     </div>
   </header>
 </template>
@@ -161,6 +158,9 @@ import { ref, computed, onMounted } from 'vue'
 import { useAuthStore } from '../../stores/auth'
 import { useOrganizationStore } from '../../stores/organization'
 import { useRouter } from 'vue-router'
+import { getPhotoUrl } from '../../config/api'
+import NotificationDropdown from '../notifications/NotificationDropdown.vue'
+import SearchBar from '../search/SearchBar.vue'
 
 const dropdownOpen = ref(false)
 const authStore = useAuthStore()
@@ -185,6 +185,12 @@ function getUserInitials(name) {
     return (names[0][0] + names[1][0]).toUpperCase()
   }
   return name.substring(0, 2).toUpperCase()
+}
+
+function handleImageError(event) {
+  // Hide the broken image and show initials instead
+  event.target.style.display = 'none'
+  console.warn('Failed to load image:', event.target.src)
 }
 
 async function handleLogout() {

@@ -6,15 +6,36 @@ use App\Http\Controllers\Api\SkillController;
 use App\Http\Controllers\Api\OrganizationController;
 use App\Http\Controllers\Api\EventController;
 use App\Http\Controllers\Api\ApplicationController;
+use App\Http\Controllers\Api\NotificationController;
+use App\Http\Controllers\Api\SearchController;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 Route::apiResource('users', UserController::class);
 Route::apiResource('skills', SkillController::class);
 Route::apiResource('organizations', OrganizationController::class);
 Route::apiResource('events', EventController::class);
 Route::apiResource('applications', ApplicationController::class);
+
+// Search endpoints
+Route::get('search', [SearchController::class, 'searchAll']);
+Route::get('search/users', [SearchController::class, 'searchUsers']);
+Route::get('search/organizations', [SearchController::class, 'searchOrganizations']);
+Route::get('search/events', [SearchController::class, 'searchEvents']);
+Route::get('search/advanced', [SearchController::class, 'advancedSearch']);
+Route::get('search/suggestions', [SearchController::class, 'suggestions']);
+
+// Notifications endpoints
+Route::middleware('auth:sanctum')->group(function() {
+    Route::get('notifications', [NotificationController::class, 'index']);
+    Route::get('notifications/unread-count', [NotificationController::class, 'unreadCount']);
+    Route::post('notifications/{id}/read', [NotificationController::class, 'markAsRead']);
+    Route::post('notifications/mark-all-read', [NotificationController::class, 'markAllAsRead']);
+    Route::delete('notifications/{id}', [NotificationController::class, 'destroy']);
+    Route::delete('notifications/clear-read', [NotificationController::class, 'clearRead']);
+});
 
 // Extra relationship endpoints
 Route::get('users/{user}/skills', [UserController::class, 'skills']);
@@ -37,7 +58,18 @@ Route::middleware('auth:sanctum')->patch('applications/{application}/status', fu
         return response()->json(['message' => 'Unauthorized to update application status'], 403);
     }
 
+    $oldStatus = $application->status;
     $application->update(['status' => $validated['status']]);
+    
+    // Send notification to applicant if status changed
+    if ($oldStatus !== $validated['status']) {
+        $application->user->notify(new \App\Notifications\ApplicationStatusChanged($application, $validated['status']));
+        
+        // Send notification to organization owner as confirmation
+        if ($user) {
+            $user->notify(new \App\Notifications\ApplicationStatusChanged($application, $validated['status'], true));
+        }
+    }
 
     return response()->json([
         'message' => 'Application status updated successfully',
@@ -61,6 +93,12 @@ Route::middleware('auth:sanctum')->post('events/{event}/reviews', function(Reque
     
     if ($existingReview) {
         $existingReview->update($validated);
+        
+        // Send notification to event owner about review update
+        if ($event->organization && $event->organization->user) {
+            $event->organization->user->notify(new \App\Notifications\NewReviewReceived($existingReview->fresh()));
+        }
+        
         return response()->json([
             'message' => 'Review updated successfully',
             'review' => $existingReview->load('user:id,name,photo')
@@ -72,6 +110,11 @@ Route::middleware('auth:sanctum')->post('events/{event}/reviews', function(Reque
         'comment' => $validated['comment'],
         'rating' => $validated['rating'],
     ]);
+    
+    // Send notification to event owner about new review
+    if ($event->organization && $event->organization->user) {
+        $event->organization->user->notify(new \App\Notifications\NewReviewReceived($review));
+    }
 
     return response()->json([
         'message' => 'Review added successfully',
@@ -123,6 +166,14 @@ Route::middleware('auth:sanctum')->post('events/{event}/apply', function(Request
         'event_id' => $event->id,
         'status' => 'pending',
     ]);
+    
+    // Send notification to applicant confirming submission
+    $user->notify(new \App\Notifications\ApplicationSubmitted($application));
+    
+    // Send notification to event owner (organization owner)
+    if ($event->organization && $event->organization->user) {
+        $event->organization->user->notify(new \App\Notifications\NewApplicationReceived($application));
+    }
 
     return response()->json([
         'message' => 'Application submitted successfully',
@@ -235,6 +286,41 @@ Route::middleware('auth:sanctum')->put('/user/profile', function(Request $reques
 
     return response()->json([
         'message' => 'Profile updated successfully',
+        'user' => $userData
+    ]);
+});
+
+Route::middleware('auth:sanctum')->post('/user/photo', function(Request $request) {
+    $user = $request->user();
+    
+    $validated = $request->validate([
+        'photo' => 'required|image|mimes:jpeg,jpg,png,gif,webp|max:5120', // max 5MB
+    ]);
+
+    // Delete old photo if exists
+    if ($user->photo && Storage::disk('public')->exists($user->photo)) {
+        Storage::disk('public')->delete($user->photo);
+    }
+
+    // Store new photo
+    $path = $request->file('photo')->store('profile-photos', 'public');
+    
+    // Update user photo path
+    $user->update(['photo' => '/storage/' . $path]);
+    
+    // Refresh user and load statistics
+    $user = $user->fresh();
+    $user->load('organizations', 'applications', 'appliedEvents');
+    
+    $userData = $user->toArray();
+    $userData['stats'] = [
+        'organizations_count' => $user->organizations()->count(),
+        'applications_count' => $user->applications()->count(),
+        'events_count' => $user->appliedEvents()->count(),
+    ];
+
+    return response()->json([
+        'message' => 'Profile photo updated successfully',
         'user' => $userData
     ]);
 });

@@ -96,20 +96,17 @@
                 <!-- User Info -->
                 <td class="px-6 py-4 whitespace-nowrap">
                   <div class="flex items-center">
-                    <div class="flex-shrink-0 h-10 w-10">
-                      <img v-if="application.user.photo" 
-                           :src="application.user.photo" 
-                           :alt="application.user.name"
-                           class="h-10 w-10 rounded-full object-cover">
-                      <div v-else class="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
-                        <span class="text-blue-600 font-medium text-sm">
-                          {{ application.user.name.charAt(0).toUpperCase() }}
-                        </span>
-                      </div>
+                    <div class="flex-shrink-0 mr-4">
+                      <Avatar 
+                        :photo="application.user?.photo"
+                        :name="application.user?.name || 'Unknown'"
+                        size="md"
+                        shadow
+                      />
                     </div>
-                    <div class="mr-4">
-                      <div class="text-sm font-medium text-gray-900">{{ application.user.name }}</div>
-                      <div class="text-sm text-gray-500">@{{ application.user.username }}</div>
+                    <div>
+                      <div class="text-sm font-medium text-gray-900">{{ application.user?.name || 'Unknown User' }}</div>
+                      <div class="text-sm text-gray-500">@{{ application.user?.username || 'unknown' }}</div>
                     </div>
                   </div>
                 </td>
@@ -206,6 +203,8 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import api from '@/api'
+import Avatar from '@/components/Avatar.vue'
+import { getPhotoUrl } from '@/config/api'
 
 const route = useRoute()
 const router = useRouter()

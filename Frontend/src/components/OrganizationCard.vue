@@ -9,14 +9,19 @@
       <!-- Organization Header -->
       <div class="flex items-start justify-between mb-4">
         <div class="flex items-center flex-1">
-          <!-- Organization Logo with Gradient Border -->
-          <div class="relative">
-            <div class="absolute inset-0 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full blur-sm opacity-50 group-hover:opacity-75 transition-opacity"></div>
-            <img
-              :src="organization.logo || 'https://via.placeholder.com/150'"
-              :alt="organization.name"
-              class="relative w-16 h-16 rounded-full object-cover border-4 border-white shadow-lg"
-            />
+          <!-- Organization Logo -->
+          <div class="relative group/avatar">
+            <div class="absolute inset-0 bg-gradient-to-br from-blue-400 to-purple-500 rounded-lg blur-sm opacity-50 group-hover/avatar:opacity-75 transition-opacity"></div>
+            <div class="relative">
+              <Avatar 
+                :photo="organization.logo"
+                :name="organization.name"
+                size="lg"
+                :rounded="false"
+                bordered
+                class="shadow-lg"
+              />
+            </div>
           </div>
           
           <!-- Organization Info -->
@@ -132,6 +137,8 @@
 
 <script setup>
 import { ref } from 'vue'
+import Avatar from './Avatar.vue'
+import { getPhotoUrl } from '@/config/api'
 
 const isDropdownOpen = ref(false)
 

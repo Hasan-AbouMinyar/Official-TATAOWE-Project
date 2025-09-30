@@ -129,6 +129,27 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
+  async function updatePhoto(file) {
+    try {
+      loading.value = true
+      error.value = null
+      
+      const formData = new FormData()
+      formData.append('photo', file)
+      
+      const response = await api.auth.uploadPhoto(formData)
+      user.value = response.data.user
+      localStorage.setItem('user', JSON.stringify(response.data.user))
+      
+      return response.data
+    } catch (err) {
+      error.value = err.response?.data?.message || 'Failed to upload photo.'
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
   function initializeAuth() {
     // Try to restore user from localStorage
     const storedUser = localStorage.getItem('user')
@@ -161,6 +182,7 @@ export const useAuthStore = defineStore('auth', () => {
     logout,
     fetchUser,
     updateProfile,
+    updatePhoto,
     initializeAuth
   }
 })
