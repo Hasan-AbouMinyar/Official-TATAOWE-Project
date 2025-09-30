@@ -102,6 +102,12 @@ class EventController extends Controller
 
     public function update(Request $request, Event $event)
     {
+        // Check if the authenticated user owns the organization that created this event
+        $user = auth('sanctum')->user();
+        if (!$user || !$event->organization || $event->organization->user_id !== $user->id) {
+            return response()->json(['message' => 'Unauthorized to edit this event'], 403);
+        }
+
         $data = $request->validate([
             'name' => 'sometimes|string|max:255',
             'description' => 'nullable|string',
@@ -147,6 +153,12 @@ class EventController extends Controller
 
     public function destroy(Event $event)
     {
+        // Check if the authenticated user owns the organization that created this event
+        $user = auth('sanctum')->user();
+        if (!$user || !$event->organization || $event->organization->user_id !== $user->id) {
+            return response()->json(['message' => 'Unauthorized to delete this event'], 403);
+        }
+
         // Delete photo if exists
         if ($event->photo && Storage::disk('public')->exists($event->photo)) {
             Storage::disk('public')->delete($event->photo);
