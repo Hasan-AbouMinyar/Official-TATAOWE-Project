@@ -208,12 +208,42 @@ const applying = ref(false)
 const hasApplied = ref(false)
 
 const canEdit = computed(() => {
-  if (!event.value || !authStore.user) return false
+  if (!event.value) {
+    console.log('canEdit: No event loaded')
+    return false
+  }
+  
+  if (!authStore.user) {
+    console.log('canEdit: No user logged in')
+    return false
+  }
+  
+  if (!event.value.organization) {
+    console.log('canEdit: Event has no organization')
+    return false
+  }
+  
   // Check if current user owns the organization that created this event
-  const organizationUserId = event.value.organization?.user_id
+  const organizationUserId = event.value.organization.user_id
   const currentUserId = authStore.user.id
-  console.log('canEdit check:', { organizationUserId, currentUserId, match: organizationUserId === currentUserId })
-  return organizationUserId === currentUserId
+  
+  console.log('canEdit check:', {
+    eventId: event.value.id,
+    eventName: event.value.name,
+    organizationId: event.value.organization.id,
+    organizationName: event.value.organization.name,
+    organizationUserId: organizationUserId,
+    currentUserId: currentUserId,
+    currentUserName: authStore.user.name,
+    match: organizationUserId === currentUserId,
+    types: {
+      orgUserId: typeof organizationUserId,
+      currentUserId: typeof currentUserId
+    }
+  })
+  
+  // Important: Compare as numbers to avoid string vs number comparison issues
+  return Number(organizationUserId) === Number(currentUserId)
 })
 
 const skillsArray = computed(() => {

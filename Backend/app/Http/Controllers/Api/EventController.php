@@ -82,7 +82,8 @@ class EventController extends Controller
 
     public function show(Event $event)
     {
-        $event->load(['organization.user:id', 'reviews.user:id,name,photo']);
+        // Load organization with its user_id (to check ownership)
+        $event->load(['organization:id,user_id,name,email,field,logo,description', 'reviews.user:id,name,photo']);
         $event->average_rating = round($event->reviews->avg('rating'), 1);
         $event->total_reviews = $event->reviews->count();
         $event->applications_count = $event->applications()->count();
