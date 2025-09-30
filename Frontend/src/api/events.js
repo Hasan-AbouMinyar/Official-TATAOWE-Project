@@ -51,6 +51,11 @@ export default {
     return apiClient.post(`/events/${id}/reviews`, reviewData)
   },
 
+  // Delete review
+  deleteReview(reviewId) {
+    return apiClient.delete(`/reviews/${reviewId}`)
+  },
+
   // Check if user applied to event
   checkApplication(id) {
     return apiClient.get(`/events/${id}/check-application`)

@@ -59,6 +59,22 @@ Route::middleware('auth:sanctum')->post('events/{event}/reviews', function(Reque
     ], 201);
 });
 
+// Delete review endpoint - only owner can delete their own review
+Route::middleware('auth:sanctum')->delete('reviews/{review}', function(Request $request, \App\Models\EventReview $review) {
+    // Check if the authenticated user is the owner of this review
+    if ($review->user_id !== $request->user()->id) {
+        return response()->json([
+            'message' => 'Unauthorized. You can only delete your own reviews.'
+        ], 403);
+    }
+
+    $review->delete();
+
+    return response()->json([
+        'message' => 'Review deleted successfully'
+    ]);
+});
+
 // Apply to event endpoint
 Route::middleware('auth:sanctum')->post('events/{event}/apply', function(Request $request, \App\Models\Event $event) {
     $user = $request->user();
