@@ -209,7 +209,11 @@ const hasApplied = ref(false)
 
 const canEdit = computed(() => {
   if (!event.value || !authStore.user) return false
-  return event.value.organization?.user_id === authStore.user.id
+  // Check if current user owns the organization that created this event
+  const organizationUserId = event.value.organization?.user_id
+  const currentUserId = authStore.user.id
+  console.log('canEdit check:', { organizationUserId, currentUserId, match: organizationUserId === currentUserId })
+  return organizationUserId === currentUserId
 })
 
 const skillsArray = computed(() => {
