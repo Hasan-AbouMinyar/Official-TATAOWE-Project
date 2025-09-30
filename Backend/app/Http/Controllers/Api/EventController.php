@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Event;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class EventController extends Controller
 {
@@ -14,11 +15,23 @@ class EventController extends Controller
             $query->select('event_id', 'rating');
         }])
         ->withCount('applications')
+        ->latest() // ← إضافة ترتيب من الأحدث للأقدم
         ->get()
         ->map(function($event) {
             $event->average_rating = round($event->reviews->avg('rating'), 1);
             $event->total_reviews = $event->reviews->count();
             unset($event->reviews);
+            
+            // Return full photo URL
+            if ($event->photo) {
+                $event->photo = asset('storage/' . $event->photo);
+            }
+            
+            // Return full logo URL for organization
+            if ($event->organization && $event->organization->logo) {
+                $event->organization->logo = asset('storage/' . $event->organization->logo);
+            }
+            
             return $event;
         });
 
@@ -41,9 +54,22 @@ class EventController extends Controller
             'end_time' => 'required|date|after_or_equal:start_time',
             'location' => 'nullable|string|max:255',
             'requiredSkills' => 'nullable|string',
-            'photo' => 'nullable|string',
+            'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:10240',
         ]);
+
+        // Handle photo upload
+        if ($request->hasFile('photo')) {
+            $photoPath = $request->file('photo')->store('events', 'public');
+            $data['photo'] = $photoPath;
+        }
+
         $event = Event::create($data);
+        
+        // Return event with full photo URL
+        if ($event->photo) {
+            $event->photo = asset('storage/' . $event->photo);
+        }
+        
         return response()->json($event, 201);
     }
 
@@ -53,6 +79,16 @@ class EventController extends Controller
         $event->average_rating = round($event->reviews->avg('rating'), 1);
         $event->total_reviews = $event->reviews->count();
         $event->applications_count = $event->applications()->count();
+        
+        // Return full photo URL
+        if ($event->photo) {
+            $event->photo = asset('storage/' . $event->photo);
+        }
+        
+        // Return full logo URL for organization
+        if ($event->organization && $event->organization->logo) {
+            $event->organization->logo = asset('storage/' . $event->organization->logo);
+        }
         
         return $event;
     }
@@ -66,14 +102,37 @@ class EventController extends Controller
             'end_time' => 'sometimes|date|after_or_equal:start_time',
             'location' => 'nullable|string|max:255',
             'requiredSkills' => 'nullable|string',
-            'photo' => 'nullable|string',
+            'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:10240',
         ]);
+
+        // Handle photo upload and delete old photo
+        if ($request->hasFile('photo')) {
+            // Delete old photo if exists
+            if ($event->photo && Storage::disk('public')->exists($event->photo)) {
+                Storage::disk('public')->delete($event->photo);
+            }
+            
+            $photoPath = $request->file('photo')->store('events', 'public');
+            $data['photo'] = $photoPath;
+        }
+
         $event->update($data);
+        
+        // Return event with full photo URL
+        if ($event->photo) {
+            $event->photo = asset('storage/' . $event->photo);
+        }
+        
         return $event;
     }
 
     public function destroy(Event $event)
     {
+        // Delete photo if exists
+        if ($event->photo && Storage::disk('public')->exists($event->photo)) {
+            Storage::disk('public')->delete($event->photo);
+        }
+        
         $event->delete();
         return response()->noContent();
     }
