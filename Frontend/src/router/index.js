@@ -26,6 +26,12 @@ const routes = [
         meta: { requiresAuth: true }
     },
     {
+        path: '/my-applications',
+        name: 'MyApplications',
+        component: () => import('@/views/MyApplications.vue'),
+        meta: { requiresAuth: true }
+    },
+    {
         path: '/login',
         name: 'Login',
         component: () => import('@/views/auth/login.vue'),

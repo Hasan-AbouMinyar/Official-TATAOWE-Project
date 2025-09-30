@@ -69,7 +69,10 @@ class UserController extends Controller
 
     public function applications(User $user)
     {
-        return $user->applications;
+        return $user->applications()
+            ->with(['event.organization'])
+            ->orderBy('created_at', 'desc')
+            ->get();
     }
 
     public function appliedEvents(User $user)
