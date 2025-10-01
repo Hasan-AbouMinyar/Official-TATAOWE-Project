@@ -8,9 +8,6 @@
       <span>Organization Mode: {{ organizationName }}</span>
     </div>
     
-    <!-- Search Bar -->
-    <SearchBar />
-    
     <div class="flex items-center z-20 gap-2">
       <div class="relative">
         <button class="transition-colors duration-300 rounded-lg sm:px-4 sm:py-2 focus:outline-none hover:bg-gray-100" @click="dropdownOpen = !dropdownOpen" :aria-expanded="dropdownOpen.toString()" aria-haspopup="menu">
@@ -160,7 +157,6 @@ import { useOrganizationStore } from '../../stores/organization'
 import { useRouter } from 'vue-router'
 import { getPhotoUrl } from '../../config/api'
 import NotificationDropdown from '../notifications/NotificationDropdown.vue'
-import SearchBar from '../search/SearchBar.vue'
 
 const dropdownOpen = ref(false)
 const authStore = useAuthStore()
